@@ -1,0 +1,3366 @@
+```html
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>GTA VII: NEO LEONIDA</title>
+  <style>
+    /* =========================================================================
+       STYLE GLOBALNE I MOTYW NEO LEONIDA (RETRO-FUTURYSTYCZNY VICE / GTA 6)
+       ========================================================================= */
+    :root {
+      --neon-pink: #ff2a85;
+      --neon-cyan: #00f0ff;
+      --neon-gold: #ffbe0b;
+      --neon-purple: #9d4edd;
+      --sunset-top: #140826;
+      --sunset-mid: #4a154b;
+      --sunset-bot: #ff5e62;
+      --glass-bg: rgba(14, 10, 28, 0.78);
+      --glass-border: rgba(255, 42, 133, 0.45);
+      --font-main: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0b0616;
+      font-family: var(--font-main);
+      color: #fff;
+      touch-action: none;
+    }
+
+    /* Główny Canvas Gry */
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    /* =========================================================================
+       EKRAN STARTOWY (GTA 6 INSPIRED SUNSET & NEON)
+       ========================================================================= */
+    #startScreen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: linear-gradient(180deg, #0d0521 0%, #3a0ca3 28%, #c9184a 62%, #ff7b00 88%, #ffd166 100%);
+      overflow-y: auto;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+
+    #startScreen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* Słońce retro w tle ekranu startowego */
+    .retro-sun {
+      position: absolute;
+      top: 12%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(340px, 65vw);
+      height: min(340px, 65vw);
+      border-radius: 50%;
+      background: linear-gradient(180deg, #fff275 0%, #ff8c42 45%, #ff2a85 100%);
+      box-shadow: 0 0 90px rgba(255, 42, 133, 0.75), 0 0 160px rgba(255, 190, 11, 0.45);
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .retro-sun::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        180deg,
+        transparent 0%,
+        transparent 52%,
+        rgba(30, 6, 45, 0.65) 52%,
+        rgba(30, 6, 45, 0.65) 56%,
+        transparent 56%,
+        transparent 63%,
+        rgba(30, 6, 45, 0.78) 63%,
+        rgba(30, 6, 45, 0.78) 69%
+      );
+    }
+
+    /* Sylwetki palm SVG */
+    .palm-left, .palm-right {
+      position: absolute;
+      bottom: 0;
+      width: min(360px, 42vw);
+      height: auto;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.92;
+      filter: drop-shadow(0 0 18px rgba(0, 0, 0, 0.5));
+    }
+    .palm-left { left: -20px; }
+    .palm-right { right: -20px; transform: scaleX(-1); }
+
+    .start-card {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 820px;
+      background: rgba(12, 7, 26, 0.76);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid rgba(255, 42, 133, 0.55);
+      border-radius: 24px;
+      padding: 26px 28px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 35px rgba(255, 42, 133, 0.28);
+      text-align: center;
+    }
+
+    .logo-badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--neon-cyan);
+      border: 1px solid rgba(0, 240, 255, 0.45);
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+      background: rgba(0, 240, 255, 0.08);
+    }
+
+    .game-title {
+      font-size: clamp(2.1rem, 6vw, 4.2rem);
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #ffbe0b 0%, #ff2a85 50%, #00f0ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 18px rgba(255, 42, 133, 0.55));
+      margin-bottom: 4px;
+    }
+
+    .game-subtitle {
+      font-size: clamp(0.95rem, 2.2vw, 1.35rem);
+      font-weight: 700;
+      letter-spacing: 0.28em;
+      color: #fff;
+      text-shadow: 0 0 12px var(--neon-cyan), 0 0 24px var(--neon-pink);
+      margin-bottom: 20px;
+    }
+
+    /* Wybór postaci */
+    .char-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .char-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .char-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .char-card.selected {
+      border-color: var(--neon-cyan);
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.16), rgba(255, 42, 133, 0.14));
+      box-shadow: 0 0 22px rgba(0, 240, 255, 0.35);
+    }
+
+    .char-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 900;
+    }
+
+    .avatar-maja {
+      background: linear-gradient(135deg, #ff2a85, #ff9e00);
+      box-shadow: 0 0 14px rgba(255, 42, 133, 0.6);
+    }
+
+    .avatar-luka {
+      background: linear-gradient(135deg, #00f0ff, #4361ee);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.6);
+    }
+
+    .char-info h3 {
+      font-size: 1.08rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      margin-bottom: 3px;
+    }
+
+    .char-info p {
+      font-size: 0.78rem;
+      color: #d6d0e8;
+      line-height: 1.3;
+    }
+
+    .char-perk {
+      display: inline-block;
+      margin-top: 5px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--neon-gold);
+    }
+
+    /* Instrukcja sterowania */
+    .controls-box {
+      background: rgba(0, 0, 0, 0.36);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      text-align: left;
+      font-size: 0.8rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 8px 16px;
+    }
+
+    .ctrl-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #e2dcf5;
+    }
+
+    .key-cap {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-bottom-width: 3px;
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--neon-cyan);
+      white-space: nowrap;
+    }
+
+    /* Przycisk Start */
+    .btn-neon {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px 42px;
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #fff;
+      background: linear-gradient(90deg, #ff2a85, #ff6b35, #ff2a85);
+      background-size: 200% auto;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 8px 28px rgba(255, 42, 133, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background-position 0.4s ease;
+    }
+
+    .btn-neon:hover {
+      transform: translateY(-2px) scale(1.02);
+      background-position: right center;
+      box-shadow: 0 12px 36px rgba(255, 42, 133, 0.8), 0 0 24px rgba(0, 240, 255, 0.45);
+    }
+
+    .btn-neon:active {
+      transform: translateY(1px) scale(0.99);
+    }
+
+    /* =========================================================================
+       HUD W GRZE
+       ========================================================================= */
+    #hud {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+      display: none;
+    }
+
+    #hud.active {
+      display: block;
+    }
+
+    /* Prawy górny róg: Statystyki */
+    .hud-top-right {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .hud-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 10px 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .hud-header-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .char-tag {
+      font-weight: 900;
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      padding: 3px 10px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple));
+    }
+
+    .clock-district {
+      text-align: right;
+    }
+
+    .clock-time {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--neon-cyan);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .district-name {
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      color: #d7cde8;
+      text-transform: uppercase;
+    }
+
+    .cash-display {
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: #4ade80;
+      text-shadow: 0 0 12px rgba(74, 222, 128, 0.5);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.03em;
+    }
+
+    .stars-row {
+      display: flex;
+      gap: 4px;
+      font-size: 1.35rem;
+      height: 24px;
+      align-items: center;
+    }
+
+    .star {
+      color: rgba(255, 255, 255, 0.18);
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .star.active {
+      color: var(--neon-gold);
+      text-shadow: 0 0 12px var(--neon-gold), 0 0 20px var(--neon-pink);
+    }
+
+    .star.flashing {
+      animation: starPulse 0.45s infinite alternate;
+    }
+
+    @keyframes starPulse {
+      from { color: #ff2a85; text-shadow: 0 0 14px #ff2a85; transform: scale(1.08); }
+      to { color: #00f0ff; text-shadow: 0 0 14px #00f0ff; transform: scale(1.0); }
+    }
+
+    .weapon-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+
+    .weapon-name {
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .weapon-ammo {
+      color: var(--neon-cyan);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Lewy górny róg: Misja & Radio */
+    .hud-top-left {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: min(340px, 54vw);
+    }
+
+    .mission-panel {
+      border-left: 4px solid var(--neon-gold);
+    }
+
+    .mission-title {
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      color: var(--neon-gold);
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .mission-desc {
+      font-size: 0.86rem;
+      color: #f3effa;
+      line-height: 1.3;
+    }
+
+    .mission-meta {
+      margin-top: 5px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--neon-cyan);
+    }
+
+    .radio-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      background: var(--glass-bg);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      color: #e8e2ff;
+      width: fit-content;
+    }
+
+    .radio-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--neon-pink);
+      box-shadow: 0 0 8px var(--neon-pink);
+    }
+
+    /* Lewy dolny róg: Radar + Paski HP/Pancerza */
+    .hud-bottom-left {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .radar-frame {
+      width: 176px;
+      height: 176px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 2px solid rgba(0, 240, 255, 0.6);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6), 0 0 18px rgba(0, 240, 255, 0.22);
+      background: #0a0714;
+      position: relative;
+    }
+
+    #radarCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .bars-wrap {
+      width: 176px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      background: var(--glass-bg);
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .bar-track {
+      height: 9px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.12s linear;
+    }
+
+    .bar-hp { background: linear-gradient(90deg, #ff2a55, #4ade80); }
+    .bar-armor { background: linear-gradient(90deg, #3b82f6, #00f0ff); }
+
+    /* Prawy dolny róg: Prędkościomierz (tylko w pojeździe) & przycisk pomocy */
+    .hud-bottom-right {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    #speedoPanel {
+      display: none;
+      min-width: 156px;
+      text-align: right;
+      border-color: rgba(0, 240, 255, 0.55);
+    }
+
+    #speedoPanel.visible {
+      display: block;
+    }
+
+    .speed-val {
+      font-size: 2.1rem;
+      font-weight: 900;
+      line-height: 1;
+      color: #fff;
+      text-shadow: 0 0 14px var(--neon-cyan);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .speed-unit {
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      color: var(--neon-cyan);
+      margin-left: 4px;
+    }
+
+    .car-name {
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--neon-pink);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .nitro-track {
+      margin-top: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      overflow: hidden;
+    }
+
+    .nitro-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ffbe0b, #ff2a85, #00f0ff);
+      width: 100%;
+    }
+
+    /* Przyciski szybkiej akcji HUD (klikalne) */
+    .hud-actions {
+      display: flex;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .hud-btn {
+      background: var(--glass-bg);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 10px;
+      padding: 7px 12px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+
+    .hud-btn:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
+    }
+
+    /* Centralne powiadomienia (Banery GTA) */
+    #bannerOverlay {
+      position: fixed;
+      top: 22%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.92);
+      z-index: 40;
+      pointer-events: none;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    #bannerOverlay.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .banner-main {
+      font-size: clamp(1.8rem, 5vw, 3.2rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #fff;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.85), 0 0 24px var(--neon-pink);
+    }
+
+    .banner-sub {
+      font-size: clamp(0.95rem, 2.2vw, 1.25rem);
+      font-weight: 700;
+      color: var(--neon-gold);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+      margin-top: 4px;
+    }
+
+    /* Podpowiedź kontekstowa (np. Wciśnij E aby wsiąść) */
+    #contextHint {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 30;
+      background: rgba(14, 10, 28, 0.86);
+      border: 1px solid var(--neon-cyan);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      box-shadow: 0 0 18px rgba(0, 240, 255, 0.35);
+      white-space: nowrap;
+    }
+
+    #contextHint.show {
+      opacity: 1;
+    }
+
+    /* Modal Pomocy / Sterowania */
+    #helpModal {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: rgba(8, 4, 18, 0.78);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #helpModal.show {
+      display: flex;
+    }
+
+    .modal-box {
+      max-width: 560px;
+      width: 100%;
+      background: #140c29;
+      border: 1.5px solid var(--neon-pink);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-box h2 {
+      color: var(--neon-cyan);
+      margin-bottom: 14px;
+      letter-spacing: 0.08em;
+    }
+
+    /* Sterowanie dotykowe (widoczne na urządzeniach mobilnych) */
+    #touchControls {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 35;
+      display: none;
+    }
+
+    #touchControls.enabled {
+      display: block;
+    }
+
+    .touch-pad {
+      position: absolute;
+      bottom: 215px;
+      left: 22px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid rgba(0, 240, 255, 0.4);
+      pointer-events: auto;
+    }
+
+    .touch-knob {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 48px;
+      height: 48px;
+      margin-left: -24px;
+      margin-top: -24px;
+      border-radius: 50%;
+      background: rgba(0, 240, 255, 0.55);
+      box-shadow: 0 0 14px var(--neon-cyan);
+    }
+
+    .touch-btns {
+      position: absolute;
+      bottom: 92px;
+      right: 18px;
+      display: grid;
+      grid-template-columns: repeat(2, 58px);
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    .t-btn {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      border: 1.5px solid rgba(255, 42, 133, 0.7);
+      background: rgba(16, 10, 32, 0.78);
+      color: #fff;
+      font-weight: 900;
+      font-size: 0.72rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      active: scale(0.95);
+    }
+
+    @media (max-width: 680px) {
+      .char-grid { grid-template-columns: 1fr; }
+      .radar-frame { width: 132px; height: 132px; }
+      .bars-wrap { width: 132px; }
+      .start-card { padding: 18px; }
+      .controls-box { font-size: 0.74rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Główny ekran gry -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- =========================================================================
+       EKRAN STARTOWY
+       ========================================================================= -->
+  <div id="startScreen">
+    <div class="retro-sun"></div>
+
+    <!-- Sylwetki palm (SVG inline) -->
+    <svg class="palm-left" viewBox="0 0 300 420" fill="#120624">
+      <path d="M55,420 Q85,290 120,165 L138,170 Q105,295 85,420 Z"/>
+      <path d="M128,168 Q60,120 8,162 Q68,148 122,180 Z"/>
+      <path d="M128,168 Q55,80 18,92 Q78,108 126,170 Z"/>
+      <path d="M132,165 Q115,65 162,25 Q148,92 142,166 Z"/>
+      <path d="M136,168 Q205,90 278,118 Q210,122 140,176 Z"/>
+      <path d="M136,174 Q212,158 268,215 Q196,184 132,184 Z"/>
+    </svg>
+    <svg class="palm-right" viewBox="0 0 300 420" fill="#120624">
+      <path d="M55,420 Q85,290 120,165 L138,170 Q105,295 85,420 Z"/>
+      <path d="M128,168 Q60,120 8,162 Q68,148 122,180 Z"/>
+      <path d="M128,168 Q55,80 18,92 Q78,108 126,170 Z"/>
+      <path d="M132,165 Q115,65 162,25 Q148,92 142,166 Z"/>
+      <path d="M136,168 Q205,90 278,118 Q210,122 140,176 Z"/>
+      <path d="M136,174 Q212,158 268,215 Q196,184 132,184 Z"/>
+    </svg>
+
+    <div class="start-card">
+      <div class="logo-badge">OTWARTY ŚWIAT 2D • EDYCJA RETRO-NEON</div>
+      <h1 class="game-title">GTA VII</h1>
+      <div class="game-subtitle">NEO LEONIDA</div>
+
+      <!-- Wybór postaci startowej -->
+      <div class="char-grid">
+        <div class="char-card selected" id="selectMaja" onclick="selectStartChar(0)">
+          <div class="char-avatar avatar-maja">M</div>
+          <div class="char-info">
+            <h3>MAJA</h3>
+            <p>Królowa ulic Neo Leonidy. Zwinna, błyskawiczna i zabójczo precyzyjna w walce.</p>
+            <span class="char-perk">★ +25% szybkości biegu • Wyższa celność</span>
+          </div>
+        </div>
+        <div class="char-card" id="selectLuka" onclick="selectStartChar(1)">
+          <div class="char-avatar avatar-luka">L</div>
+          <div class="char-info">
+            <h3>LUKA</h3>
+            <p>Mistrz kierownicy i ucieczek. Twardziel, który wyciśnie z każdego silnika maksimum.</p>
+            <span class="char-perk">★ +15% osiągów aut • +30% wytrzymałości</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instrukcja sterowania -->
+      <div class="controls-box">
+        <div class="ctrl-item"><span class="key-cap">WASD / Strzałki</span> Ruch / Jazda</div>
+        <div class="ctrl-item"><span class="key-cap">Mysz + LPM</span> Celowanie i Strzał</div>
+        <div class="ctrl-item"><span class="key-cap">E / F</span> Wsiądź / Wysiądź z auta</div>
+        <div class="ctrl-item"><span class="key-cap">TAB</span> Zmień bohatera (Maja/Luka)</div>
+        <div class="ctrl-item"><span class="key-cap">1 / 2 / 3</span> Pistolet / SMG / Strzelba</div>
+        <div class="ctrl-item"><span class="key-cap">Shift</span> Sprint / Nitro w aucie</div>
+        <div class="ctrl-item"><span class="key-cap">Spacja</span> Hamulec ręczny / Drift</div>
+        <div class="ctrl-item"><span class="key-cap">R / M</span> Zmiana stacji radia / Wycisz</div>
+      </div>
+
+      <button class="btn-neon" id="startBtn">▶ ROZPOCZNIJ GRĘ</button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       HUD W GRZE
+       ========================================================================= -->
+  <div id="hud">
+    <!-- Lewy górny róg: Misja i Radio -->
+    <div class="hud-top-left">
+      <div class="hud-panel mission-panel" id="missionPanel">
+        <div class="mission-title" id="missionTitle">WOLNA JAZDA</div>
+        <div class="mission-desc" id="missionDesc">Wjedź w pulsujący różowo-złoty znacznik na mapie, aby rozpocząć misję!</div>
+        <div class="mission-meta" id="missionMeta"></div>
+      </div>
+      <div class="radio-pill" id="radioPill">
+        <span class="radio-dot"></span>
+        <span id="radioName">RADIO: WAVE 104.5 FM (Synthwave)</span>
+      </div>
+    </div>
+
+    <!-- Prawy górny róg: Postać, Czas, Kasa, Gwiazdki, Broń -->
+    <div class="hud-top-right">
+      <div class="hud-panel">
+        <div class="hud-header-row">
+          <span class="char-tag" id="hudCharName">MAJA</span>
+          <div class="clock-district">
+            <div class="clock-time" id="hudClock">18:00</div>
+            <div class="district-name" id="hudDistrict">NEONOWA PROMENADA</div>
+          </div>
+        </div>
+        <div class="cash-display" id="hudCash">$ 1 200</div>
+        <div class="stars-row" id="hudStars">
+          <span class="star">★</span>
+          <span class="star">★</span>
+          <span class="star">★</span>
+          <span class="star">★</span>
+          <span class="star">★</span>
+        </div>
+      </div>
+      <div class="hud-panel weapon-box">
+        <span class="weapon-name" id="hudWeapon">PISTOLET 9MM</span>
+        <span class="weapon-ammo" id="hudAmmo">∞</span>
+      </div>
+    </div>
+
+    <!-- Lewy dolny róg: Radar + Paski HP/Pancerz -->
+    <div class="hud-bottom-left">
+      <div class="radar-frame">
+        <canvas id="radarCanvas" width="176" height="176"></canvas>
+      </div>
+      <div class="bars-wrap">
+        <div class="bar-track"><div class="bar-fill bar-hp" id="hpBar" style="width:100%"></div></div>
+        <div class="bar-track"><div class="bar-fill bar-armor" id="armorBar" style="width:60%"></div></div>
+      </div>
+    </div>
+
+    <!-- Prawy dolny róg: Prędkościomierz i Szybkie przyciski -->
+    <div class="hud-bottom-right">
+      <div class="hud-panel" id="speedoPanel">
+        <div><span class="speed-val" id="speedVal">0</span><span class="speed-unit">KM/H</span></div>
+        <div class="car-name" id="carNameLabel">NEON INFERNUS</div>
+        <div class="nitro-track"><div class="nitro-fill" id="nitroBar"></div></div>
+      </div>
+      <div class="hud-actions">
+        <button class="hud-btn" onclick="toggleRadio()">♪ Radio (R)</button>
+        <button class="hud-btn" onclick="toggleMute()" id="muteBtn">🔊 Dźwięk (M)</button>
+        <button class="hud-btn" onclick="toggleHelp()">? Pomoc (H)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Centralny baner powiadomień -->
+  <div id="bannerOverlay">
+    <div class="banner-main" id="bannerMain">MISJA UKOŃCZONA!</div>
+    <div class="banner-sub" id="bannerSub">+$1500</div>
+  </div>
+
+  <!-- Podpowiedź kontekstowa -->
+  <div id="contextHint">Wciśnij [E], aby wsiąść do pojazdu</div>
+
+  <!-- Okno Pomocy -->
+  <div id="helpModal">
+    <div class="modal-box">
+      <h2>STEROWANIE — NEO LEONIDA</h2>
+      <div class="controls-box" style="margin-bottom:16px">
+        <div class="ctrl-item"><span class="key-cap">WASD / Strzałki</span> Ruch / Jazda</div>
+        <div class="ctrl-item"><span class="key-cap">Mysz + LPM</span> Celowanie / Strzał</div>
+        <div class="ctrl-item"><span class="key-cap">E lub F</span> Wsiądź / Wysiądź</div>
+        <div class="ctrl-item"><span class="key-cap">TAB</span> Przełącz Maja / Luka</div>
+        <div class="ctrl-item"><span class="key-cap">1 / 2 / 3</span> Zmiana broni</div>
+        <div class="ctrl-item"><span class="key-cap">Shift</span> Sprint / Nitro</div>
+        <div class="ctrl-item"><span class="key-cap">Spacja</span> Drift (w aucie)</div>
+        <div class="ctrl-item"><span class="key-cap">R / M</span> Stacja radia / Wycisz</div>
+      </div>
+      <p style="font-size:0.84rem; color:#d8d0ec; line-height:1.45; margin-bottom:16px;">
+        <strong>Wskazówka:</strong> Warsztat <strong>NEON SPRAY</strong> (turkusowa ikona puszki na radarze) pozwala za <strong>$500</strong> naprawić auto, przemalować je i natychmiast zgubić pościg policyjny!
+      </p>
+      <button class="btn-neon" style="padding:10px 26px; font-size:0.9rem;" onclick="toggleHelp()">WRÓĆ DO GRY</button>
+    </div>
+  </div>
+
+  <!-- Sterowanie dotykowe (aktywowane automatycznie na ekranach dotykowych) -->
+  <div id="touchControls">
+    <div class="touch-pad" id="touchPad"><div class="touch-knob" id="touchKnob"></div></div>
+    <div class="touch-btns">
+      <button class="t-btn" id="tShoot">STRZAŁ</button>
+      <button class="t-btn" id="tCar">AUTO (E)</button>
+      <button class="t-btn" id="tBoost">NITRO</button>
+      <button class="t-btn" id="tSwitch">MAJA/LUKA</button>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       GTA VII: NEO LEONIDA — GŁÓWNY SILNIK GRY (HTML5 CANVAS + WEB AUDIO API)
+       ========================================================================= */
+
+    // --- KONFIGURACJA ŚWIATA ---
+    const WORLD_SIZE = 3200;
+    const ROAD_WIDTH = 148;
+    const ROAD_XS = [420, 1060, 1700, 2320]; // Pionowe aleje
+    const ROAD_YS = [420, 1060, 1700, 2340, 2860]; // Poziome ulice
+    const BEACH_X = 2500; // Początek Złotej Plaży
+    const OCEAN_X = 2830; // Linia brzegu Oceanu
+
+    // Warsztat NEON SPRAY
+    const SPRAY_SHOP = { x: 1380, y: 1380, r: 58, cost: 500 };
+    // Szpital (punkt odrodzenia)
+    const HOSPITAL = { x: 1060, y: 1060 };
+
+    // --- BOHATEROWIE (MAJA & LUKA) ---
+    const CHARACTERS = [
+      {
+        id: 0,
+        name: "MAJA",
+        shirt: "#ff2a85",
+        hair: "#240b36",
+        speedMult: 1.25,
+        spreadMult: 0.55,
+        carSpeedMult: 1.0,
+        damageTakenMult: 1.0
+      },
+      {
+        id: 1,
+        name: "LUKA",
+        shirt: "#00f0ff",
+        hair: "#3b2314",
+        speedMult: 1.0,
+        spreadMult: 1.0,
+        carSpeedMult: 1.15,
+        damageTakenMult: 0.72
+      }
+    ];
+
+    // --- BRONIE ---
+    const WEAPONS = [
+      { id: 0, name: "PISTOLET 9MM", fireRate: 0.24, damage: 28, speed: 920, spread: 0.06, pellets: 1, range: 0.75, infinite: true, ammo: 999, color: "#ffbe0b" },
+      { id: 1, name: "SMG NEON-9", fireRate: 0.09, damage: 16, speed: 980, spread: 0.13, pellets: 1, range: 0.65, infinite: false, ammo: 120, color: "#00f0ff" },
+      { id: 2, name: "STRZELBA BOJOWA", fireRate: 0.68, damage: 22, speed: 820, spread: 0.28, pellets: 5, range: 0.42, infinite: false, ammo: 32, color: "#ff2a85" }
+    ];
+
+    // --- TYPY POJAZDÓW ---
+    const VEHICLE_TYPES = {
+      super: { name: "NEON INFERNUS", w: 54, h: 28, maxSpeed: 590, accel: 460, turn: 3.1, maxHp: 180, colors: ["#ff2a85", "#00f0ff", "#ffbe0b", "#b5179e", "#ffffff"] },
+      muscle: { name: "LEONIDA SABRE", w: 56, h: 30, maxSpeed: 490, accel: 390, turn: 2.8, maxHp: 230, colors: ["#ff5400", "#e63946", "#3a86ff", "#ffd166", "#2ec4b6"] },
+      cabrio: { name: "OCEAN BREEZE", w: 50, h: 26, maxSpeed: 455, accel: 350, turn: 3.2, maxHp: 160, colors: ["#ff85a1", "#48cae4", "#9ef01a", "#ff9f1c", "#c77dff"] },
+      police: { name: "RADIOWÓZ LCPD", w: 56, h: 29, maxSpeed: 540, accel: 430, turn: 3.0, maxHp: 240, colors: ["#161a2b"] }
+    };
+
+    // --- STAN GRY ---
+    let canvas, ctx, radarCanvas, rctx;
+    let gameRunning = false;
+    let selectedStartChar = 0;
+    let lastTime = 0;
+    let timeOfDay = 17.6; // Start w Złotej Godzinie (17:36)
+    let bannerTimer = 0;
+    let helpOpen = false;
+    let screenShake = 0;
+
+    // Wejście
+    const keys = {};
+    const mouse = { x: 0, y: 0, worldX: 0, worldY: 0, down: false };
+    const touchState = { active: false, dx: 0, dy: 0, shoot: false, boost: false };
+
+    // Kamera
+    const camera = { x: 2200, y: 1200, zoom: 1.0 };
+
+    // Obiekty świata
+    const buildings = [];
+    const palmTrees = [];
+    const beachProps = [];
+    const streetLamps = [];
+    const vehicles = [];
+    const npcs = [];
+    const bullets = [];
+    const particles = [];
+    const skidMarks = [];
+    const pickups = [];
+
+    // Gracz
+    const player = {
+      x: 2320,
+      y: 1200,
+      vx: 0,
+      vy: 0,
+      angle: 0,
+      r: 13,
+      hp: 100,
+      maxHp: 100,
+      armor: 60,
+      maxArmor: 100,
+      cash: 1200,
+      charIdx: 0,
+      weaponIdx: 0,
+      fireCooldown: 0,
+      inVehicle: null,
+      wanted: 0, // 0..5
+      wantedDecay: 0,
+      policeSpawnTimer: 0,
+      walkPhase: 0,
+      invulnTimer: 0
+    };
+
+    // System misji
+    const missionState = {
+      active: null, // obiekt aktywnej misji
+      startMarker: { x: 2320, y: 1520, r: 42 },
+      nextMissionIdx: 0,
+      completedCount: 0
+    };
+
+    /* =========================================================================
+       SILNIK DŹWIĘKOWY (WEB AUDIO API — RADIO SYNTHWAVE + SFX)
+       ========================================================================= */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+        this.stationIdx = 0; // 0: Wave 104.5, 1: Leonida Nights, 2: Off
+        this.stations = [
+          { name: "WAVE 104.5 FM (Synthwave)", bpm: 118, bass: [55, 55, 55, 55, 65.4, 65.4, 73.4, 73.4], arp: [220, 261.6, 329.6, 440, 329.6, 261.6, 293.7, 392] },
+          { name: "LEONIDA NIGHTS (Chillwave)", bpm: 94, bass: [49, 49, 55, 55, 61.7, 61.7, 55, 55], arp: [196, 246.9, 293.7, 392, 220, 261.6, 329.6, 440] },
+          { name: "RADIO WYŁĄCZONE", bpm: 0 }
+        ];
+        this.step = 0;
+        this.radioTimer = null;
+        this.sirenOsc = null;
+        this.sirenGain = null;
+        this.sirenPhase = 0;
+      }
+
+      init() {
+        if (this.ctx) return;
+        try {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AC();
+          this.startRadioLoop();
+        } catch (e) {
+          // Przeglądarka zablokowała audio
+        }
+      }
+
+      startRadioLoop() {
+        if (this.radioTimer) clearInterval(this.radioTimer);
+        const st = this.stations[this.stationIdx];
+        if (!st || st.bpm === 0) return;
+        const intervalMs = (60 / st.bpm / 2) * 1000; // ósemki
+        this.radioTimer = setInterval(() => {
+          if (!gameRunning || this.muted || !this.ctx || this.ctx.state !== 'running') return;
+          this.playRadioStep(st);
+        }, intervalMs);
+      }
+
+      playRadioStep(st) {
+        try {
+          const now = this.ctx.currentTime;
+          const volBase = player.inVehicle ? 0.085 : 0.032; // głośniej w aucie
+
+          // Synthwave Bass (piła z filtrem dolnoprzepustowym)
+          const bassFreq = st.bass[this.step % st.bass.length];
+          const osc = this.ctx.createOscillator();
+          const filter = this.ctx.createBiquadFilter();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(bassFreq, now);
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(520, now);
+          filter.frequency.exponentialRampToValueAtTime(160, now + 0.18);
+          gain.gain.setValueAtTime(volBase, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.21);
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.22);
+
+          // Retro Arpeggio co drugi krok
+          if (this.step % 2 === 0) {
+            const arpFreq = st.arp[(this.step / 2) % st.arp.length];
+            const aOsc = this.ctx.createOscillator();
+            const aGain = this.ctx.createGain();
+            aOsc.type = 'triangle';
+            aOsc.frequency.setValueAtTime(arpFreq, now);
+            aGain.gain.setValueAtTime(volBase * 0.55, now);
+            aGain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+            aOsc.connect(aGain);
+            aGain.connect(this.ctx.destination);
+            aOsc.start(now);
+            aOsc.stop(now + 0.3);
+          }
+
+          // Kick co 4 kroki (na raz)
+          if (this.step % 4 === 0) {
+            const kOsc = this.ctx.createOscillator();
+            const kGain = this.ctx.createGain();
+            kOsc.frequency.setValueAtTime(135, now);
+            kOsc.frequency.exponentialRampToValueAtTime(38, now + 0.12);
+            kGain.gain.setValueAtTime(volBase * 1.4, now);
+            kGain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+            kOsc.connect(kGain);
+            kGain.connect(this.ctx.destination);
+            kOsc.start(now);
+            kOsc.stop(now + 0.15);
+          }
+
+          this.step++;
+        } catch (e) {}
+      }
+
+      switchStation() {
+        this.stationIdx = (this.stationIdx + 1) % this.stations.length;
+        this.startRadioLoop();
+        document.getElementById('radioName').textContent = "RADIO: " + this.stations[this.stationIdx].name;
+      }
+
+      toggleMute() {
+        this.muted = !this.muted;
+        document.getElementById('muteBtn').textContent = this.muted ? "🔇 Wyciszono (M)" : "🔊 Dźwięk (M)";
+      }
+
+      playShot(weaponIdx) {
+        if (this.muted || !this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          // Szum dla wystrzału
+          const bufferSize = this.ctx.sampleRate * (weaponIdx === 2 ? 0.18 : 0.09);
+          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
+
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buffer;
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.value = weaponIdx === 2 ? 420 : (weaponIdx === 1 ? 1100 : 800);
+
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(weaponIdx === 2 ? 0.25 : 0.14, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + (weaponIdx === 2 ? 0.18 : 0.09));
+
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+          noise.start(now);
+        } catch (e) {}
+      }
+
+      playExplosion() {
+        if (this.muted || !this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          const len = this.ctx.sampleRate * 0.65;
+          const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+          const d = buf.getChannelData(0);
+          for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (len * 0.3));
+          const src = this.ctx.createBufferSource();
+          src.buffer = buf;
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(340, now);
+          filter.frequency.exponentialRampToValueAtTime(55, now + 0.6);
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(0.45, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+          src.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+          src.start(now);
+        } catch (e) {}
+      }
+
+      playTone(freqStart, freqEnd, dur, vol = 0.12, type = 'sine') {
+        if (this.muted || !this.ctx) return;
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freqStart, now);
+          osc.frequency.exponentialRampToValueAtTime(freqEnd, now + dur);
+          gain.gain.setValueAtTime(vol, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + dur + 0.02);
+        } catch (e) {}
+      }
+
+      playCash() {
+        this.playTone(880, 1320, 0.12, 0.1, 'triangle');
+        setTimeout(() => this.playTone(1320, 1760, 0.15, 0.1, 'triangle'), 80);
+      }
+
+      playSpray() {
+        this.playTone(600, 1200, 0.35, 0.1, 'sawtooth');
+      }
+
+      updateSiren(dt, active) {
+        if (!this.ctx || this.muted || !active || !gameRunning) {
+          if (this.sirenGain) this.sirenGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.08);
+          return;
+        }
+        try {
+          if (!this.sirenOsc) {
+            this.sirenOsc = this.ctx.createOscillator();
+            this.sirenGain = this.ctx.createGain();
+            this.sirenOsc.type = 'triangle';
+            this.sirenGain.gain.value = 0;
+            this.sirenOsc.connect(this.sirenGain);
+            this.sirenGain.connect(this.ctx.destination);
+            this.sirenOsc.start();
+          }
+          this.sirenPhase += dt * 4.5;
+          const freq = 640 + Math.sin(this.sirenPhase) * 210;
+          this.sirenOsc.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.04);
+          this.sirenGain.gain.setTargetAtTime(0.032, this.ctx.currentTime, 0.1);
+        } catch (e) {}
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    /* =========================================================================
+       GENEROWANIE OTWARTEGO ŚWIATA NEO LEONIDA
+       ========================================================================= */
+    function generateWorld() {
+      buildings.length = 0;
+      palmTrees.length = 0;
+      beachProps.length = 0;
+      streetLamps.length = 0;
+      pickups.length = 0;
+
+      // Zakresy kwartałów między drogami
+      const xBounds = [40, ...ROAD_XS, BEACH_X];
+      const yBounds = [40, ...ROAD_YS, WORLD_SIZE - 60];
+
+      const neonColors = ["#ff2a85", "#00f0ff", "#ffbe0b", "#c77dff", "#06d6a0"];
+      const clubNames = ["CLUB MALIBU", "NEON PALMS", "HOTEL VICE", "OCEAN LOUNGE", "STARLIGHT", "LEONIDA BAR", "SYNTH TOWER", "CYBER PLAZA"];
+
+      for (let ix = 0; ix < xBounds.length - 1; ix++) {
+        for (let iy = 0; iy < yBounds.length - 1; iy++) {
+          const minX = xBounds[ix] + (ix === 0 ? 0 : ROAD_WIDTH / 2 + 24);
+          const maxX = xBounds[ix + 1] - (ix === xBounds.length - 2 ? 22 : ROAD_WIDTH / 2 + 24);
+          const minY = yBounds[iy] + (iy === 0 ? 0 : ROAD_WIDTH / 2 + 24);
+          const maxY = yBounds[iy + 1] - (iy === yBounds.length - 2 ? 0 : ROAD_WIDTH / 2 + 24);
+
+          const bw = maxX - minX;
+          const bh = maxY - minY;
+          if (bw < 110 || bh < 110) continue;
+
+          // Zostaw miejsce na warsztat NEON SPRAY w kwadracie (1060..1700, 1060..1700)
+          const cx = (minX + maxX) / 2;
+          const cy = (minY + maxY) / 2;
+          if (Math.hypot(cx - SPRAY_SHOP.x, cy - SPRAY_SHOP.y) < 220) {
+            // Budynek warsztatu po północnej stronie placu
+            buildings.push({
+              x: SPRAY_SHOP.x - 120,
+              y: SPRAY_SHOP.y - 165,
+              w: 240,
+              h: 95,
+              color: "#22183a",
+              roofColor: "#170f2b",
+              neonColor: "#00f0ff",
+              neonText: "NEON SPRAY",
+              type: "workshop"
+            });
+            continue;
+          }
+
+          // Określ dzielnicę kwartału
+          let district = "centrum";
+          if (minX >= 1700) district = "promenade";
+          else if (minX < 900 || minY >= 2300) district = "port";
+
+          // Podziel duży kwartał na 2-3 budynki
+          const cols = bw > 340 ? 2 : 1;
+          const rows = bh > 340 ? 2 : 1;
+          const pad = 22;
+          const cellW = (bw - pad * (cols - 1)) / cols;
+          const cellH = (bh - pad * (rows - 1)) / rows;
+
+          for (let c = 0; c < cols; c++) {
+            for (let r = 0; r < rows; r++) {
+              // Czasem zostaw otwarty skwer z palmami
+              if (Math.random() < 0.12) {
+                palmTrees.push({ x: minX + c * (cellW + pad) + cellW / 2, y: minY + r * (cellH + pad) + cellH / 2, r: 22 + Math.random() * 8 });
+                continue;
+              }
+              const bx = minX + c * (cellW + pad);
+              const by = minY + r * (cellH + pad);
+              const neon = neonColors[(ix * 3 + iy * 5 + c + r) % neonColors.length];
+              let baseCol = "#261c3d";
+              let roofCol = "#1b132e";
+              let label = "";
+
+              if (district === "promenade") {
+                baseCol = "#331e4d";
+                roofCol = "#25143b";
+                label = clubNames[(ix + iy + c + r) % clubNames.length];
+              } else if (district === "port") {
+                baseCol = "#242c38";
+                roofCol = "#1a212b";
+                label = Math.random() < 0.35 ? "PORT CARGO" : "";
+              } else {
+                baseCol = "#1f2238";
+                roofCol = "#141626";
+                if (Math.random() < 0.35) label = "NEO CORP";
+              }
+
+              buildings.push({
+                x: bx,
+                y: by,
+                w: cellW,
+                h: cellH,
+                color: baseCol,
+                roofColor: roofCol,
+                neonColor: neon,
+                neonText: label,
+                type: district
+              });
+            }
+          }
+        }
+      }
+
+      // Palmy wzdłuż Neonowej Promenady i na Złotej Plaży
+      for (let y = 120; y < WORLD_SIZE - 120; y += 135) {
+        palmTrees.push({ x: BEACH_X + 35 + Math.random() * 35, y: y + (Math.random() - 0.5) * 35, r: 24 + Math.random() * 8 });
+        if (Math.random() < 0.65) {
+          palmTrees.push({ x: BEACH_X + 150 + Math.random() * 90, y: y + (Math.random() - 0.5) * 50, r: 22 + Math.random() * 7 });
+        }
+      }
+
+      // Leżaki i parasole na plaży
+      const umbrellaColors = ["#ff2a85", "#00f0ff", "#ffbe0b", "#ff5400", "#9ef01a"];
+      for (let y = 200; y < WORLD_SIZE - 200; y += 190) {
+        beachProps.push({
+          x: BEACH_X + 195 + (Math.random() - 0.5) * 55,
+          y: y,
+          color: umbrellaColors[Math.floor(Math.random() * umbrellaColors.length)]
+        });
+      }
+
+      // Latarnie uliczne na skrzyżowaniach i wzdłuż dróg
+      for (const rx of ROAD_XS) {
+        for (let y = 220; y < WORLD_SIZE - 200; y += 320) {
+          streetLamps.push({ x: rx - ROAD_WIDTH / 2 - 10, y });
+          streetLamps.push({ x: rx + ROAD_WIDTH / 2 + 10, y });
+        }
+      }
+
+      // Znajdźki (Gotówka, Apteczki, Pancerz, Amunicja)
+      const pickupSpots = [
+        { x: 2620, y: 740, type: "cash" },
+        { x: 2640, y: 1860, type: "armor" },
+        { x: 1380, y: 740, type: "ammo" },
+        { x: 740, y: 1380, type: "health" },
+        { x: 2010, y: 1380, type: "cash" },
+        { x: 740, y: 2600, type: "ammo" },
+        { x: 1700, y: 2600, type: "armor" },
+        { x: 1060, y: 1000, type: "health" },
+        { x: 2320, y: 720, type: "cash" },
+        { x: 420, y: 740, type: "armor" }
+      ];
+      for (const p of pickupSpots) {
+        pickups.push({ ...p, respawn: 0 });
+      }
+    }
+
+    /* =========================================================================
+       SPAWNOWANIE POJAZDÓW I MIESZKAŃCÓW (ŻYJĄCE MIASTO)
+       ========================================================================= */
+    function spawnVehicle(type, x, y, angle, driver = null, customColor = null) {
+      const def = VEHICLE_TYPES[type] || VEHICLE_TYPES.muscle;
+      const color = customColor || def.colors[Math.floor(Math.random() * def.colors.length)];
+      const v = {
+        id: Math.random().toString(36).slice(2),
+        type,
+        name: def.name,
+        x, y,
+        vx: 0, vy: 0,
+        angle,
+        speed: 0,
+        w: def.w,
+        h: def.h,
+        maxSpeed: def.maxSpeed,
+        accel: def.accel,
+        turn: def.turn,
+        hp: def.maxHp,
+        maxHp: def.maxHp,
+        color,
+        nitro: 100,
+        driver, // null | 'player' | 'npc' | 'police'
+        sirenPhase: Math.random() * 6,
+        drifting: false,
+        destroyed: false,
+        smokeTimer: 0,
+        aiDir: Math.round(angle / (Math.PI / 2)) * (Math.PI / 2),
+        aiTurnCooldown: 0,
+        isMissionTarget: false
+      };
+      vehicles.push(v);
+      return v;
+    }
+
+    function populateCity() {
+      vehicles.length = 0;
+      npcs.length = 0;
+
+      // Kilka fajnych aut zaparkowanych blisko startu na Promenadzie
+      spawnVehicle("super", 2358, 1140, Math.PI / 2, null, "#ff2a85");
+      spawnVehicle("cabrio", 2282, 1300, -Math.PI / 2, null, "#00f0ff");
+      spawnVehicle("muscle", 2358, 1600, Math.PI / 2, null, "#ffbe0b");
+
+      // Ruch uliczny (auta NPC)
+      const types = ["super", "muscle", "cabrio"];
+      for (let i = 0; i < 20; i++) {
+        const horiz = Math.random() < 0.5;
+        let x, y, angle;
+        if (horiz) {
+          const ry = ROAD_YS[Math.floor(Math.random() * ROAD_YS.length)];
+          const dir = Math.random() < 0.5 ? 1 : -1;
+          x = 180 + Math.random() * (BEACH_X - 360);
+          y = ry + dir * 32;
+          angle = dir === 1 ? 0 : Math.PI;
+        } else {
+          const rx = ROAD_XS[Math.floor(Math.random() * ROAD_XS.length)];
+          const dir = Math.random() < 0.5 ? 1 : -1;
+          x = rx - dir * 32;
+          y = 180 + Math.random() * (WORLD_SIZE - 360);
+          angle = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
+        }
+        if (Math.hypot(x - player.x, y - player.y) > 220) {
+          spawnVehicle(types[i % types.length], x, y, angle, "npc");
+        }
+      }
+
+      // Przechodnie na chodnikach i na Złotej Plaży
+      const shirtCols = ["#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#ff70a6", "#70d6ff", "#ffffff"];
+      for (let i = 0; i < 42; i++) {
+        let px, py;
+        if (i < 12) {
+          // Plaża
+          px = BEACH_X + 60 + Math.random() * 220;
+          py = 220 + Math.random() * (WORLD_SIZE - 440);
+        } else {
+          // Chodniki przy alejach
+          const rx = ROAD_XS[Math.floor(Math.random() * ROAD_XS.length)];
+          px = rx + (Math.random() < 0.5 ? -ROAD_WIDTH / 2 - 14 : ROAD_WIDTH / 2 + 14);
+          py = 180 + Math.random() * (WORLD_SIZE - 360);
+        }
+        npcs.push({
+          x: px, y: py, vx: 0, vy: 0,
+          angle: Math.random() * Math.PI * 2,
+          r: 12,
+          hp: 50,
+          maxHp: 50,
+          type: "ped",
+          color: shirtCols[i % shirtCols.length],
+          state: "walk",
+          timer: Math.random() * 3,
+          shootCooldown: 0
+        });
+      }
+    }
+
+    /* =========================================================================
+       SYSTEM MISJI DYNAMICZNYCH
+       ========================================================================= */
+    function placeNextMissionMarker() {
+      const spots = [
+        { x: 2320, y: 1520 },
+        { x: 1700, y: 1060 },
+        { x: 1060, y: 1700 },
+        { x: 2320, y: 2340 },
+        { x: 420, y: 1700 }
+      ];
+      const spot = spots[missionState.nextMissionIdx % spots.length];
+      missionState.startMarker = { x: spot.x, y: spot.y, r: 44 };
+    }
+
+    function startDynamicMission() {
+      const idx = missionState.nextMissionIdx % 4;
+      missionState.nextMissionIdx++;
+
+      if (idx === 0) {
+        // 1. SZYBKA DOSTAWA
+        const dests = [
+          { x: 420, y: 420, label: "Dzielnicy Portowej (Północ)" },
+          { x: 420, y: 2860, label: "Doku Południowego" },
+          { x: 2320, y: 420, label: "Klubu Północnego na Promenadzie" }
+        ];
+        const d = dests[Math.floor(Math.random() * dests.length)];
+        missionState.active = {
+          type: "delivery",
+          title: "SZYBKA DOSTAWA",
+          desc: `Dostarcz przesyłkę do ${d.label} przed upływem czasu!`,
+          targetX: d.x,
+          targetY: d.y,
+          timer: 48,
+          reward: 1500
+        };
+        showBanner("MISJA: SZYBKA DOSTAWA", "Dojedź do złotego punktu na radarze!");
+      } else if (idx === 1) {
+        // 2. PRZEJĘCIE SUPERSAMOCHODU
+        const spawnX = 1060, spawnY = 450;
+        const targetCar = spawnVehicle("super", spawnX, spawnY, 0, null, "#ffbe0b");
+        targetCar.isMissionTarget = true;
+        missionState.active = {
+          type: "steal",
+          title: "PRZEJĘCIE SUPERSAMOCHODU",
+          desc: "Ukradnij złoty supersamochód i odstaw go do warsztatu NEON SPRAY!",
+          car: targetCar,
+          stage: "get", // get -> deliver
+          targetX: spawnX,
+          targetY: spawnY,
+          dropoffX: SPRAY_SHOP.x,
+          dropoffY: SPRAY_SHOP.y,
+          reward: 2200
+        };
+        showBanner("MISJA: PRZEJĘCIE AUTA", "Ukradnij złoty Neon Infernus!");
+      } else if (idx === 2) {
+        // 3. PORACHUNKI W NEO LEONIDZIE
+        const gx = 740, gy = 2340;
+        const gangMembers = [];
+        for (let i = 0; i < 5; i++) {
+          const ang = (i / 5) * Math.PI * 2;
+          const m = {
+            x: gx + Math.cos(ang) * 70,
+            y: gy + Math.sin(ang) * 70,
+            vx: 0, vy: 0, angle: 0, r: 13,
+            hp: 75, maxHp: 75,
+            type: "gang",
+            color: "#9d4edd",
+            state: "shoot",
+            timer: 0,
+            shootCooldown: 0.6 + Math.random() * 0.6
+          };
+          npcs.push(m);
+          gangMembers.push(m);
+        }
+        missionState.active = {
+          type: "gang",
+          title: "PORACHUNKI W NEO LEONIDZIE",
+          desc: "Zlikwiduj wrogi gang Neonowych Żmij w Dzielnicy Portowej!",
+          enemies: gangMembers,
+          targetX: gx,
+          targetY: gy,
+          reward: 2500
+        };
+        showBanner("MISJA: PORACHUNKI", "Wyeliminuj 5 członków gangu!");
+      } else {
+        // 4. UCIECZKA Z OBŁAWY
+        addWanted(3 - player.wanted);
+        missionState.active = {
+          type: "escape",
+          title: "UCIECZKA Z OBŁAWY",
+          desc: "Przetrwaj policyjną obławę lub zgub pościg w Neon Spray!",
+          timer: 35,
+          reward: 2000
+        };
+        showBanner("MISJA: UCIECZKA Z OBŁAWY", "Przetrwaj 35 sekund na 3 gwiazdkach!");
+      }
+      sound.playTone(440, 880, 0.25, 0.12, 'triangle');
+    }
+
+    function updateMission(dt) {
+      const m = missionState.active;
+      const px = player.inVehicle ? player.inVehicle.x : player.x;
+      const py = player.inVehicle ? player.inVehicle.y : player.y;
+
+      if (!m) {
+        // Sprawdź wejście w znacznik startowy misji
+        if (Math.hypot(px - missionState.startMarker.x, py - missionState.startMarker.y) < missionState.startMarker.r + 14) {
+          startDynamicMission();
+        }
+        return;
+      }
+
+      if (m.type === "delivery") {
+        m.timer -= dt;
+        if (Math.hypot(px - m.targetX, py - m.targetY) < 68) {
+          completeMission(m);
+        } else if (m.timer <= 0) {
+          failMission("CZAS MINĄŁ!");
+        }
+      } else if (m.type === "steal") {
+        if (m.car.destroyed) {
+          failMission("AUTO ZNISZCZONE!");
+          return;
+        }
+        if (m.stage === "get") {
+          m.targetX = m.car.x;
+          m.targetY = m.car.y;
+          if (player.inVehicle === m.car) {
+            m.stage = "deliver";
+            m.targetX = m.dropoffX;
+            m.targetY = m.dropoffY;
+            m.desc = "Odstaw supersamochód do garażu NEON SPRAY!";
+            addWanted(2);
+            showBanner("AUTO PRZEJĘTE!", "Jedź do warsztatu NEON SPRAY!");
+          }
+        } else {
+          if (player.inVehicle === m.car && Math.hypot(m.car.x - m.dropoffX, m.car.y - m.dropoffY) < 75) {
+            m.car.isMissionTarget = false;
+            completeMission(m);
+          }
+        }
+      } else if (m.type === "gang") {
+        const alive = m.enemies.filter(e => e.hp > 0);
+        if (alive.length === 0) {
+          completeMission(m);
+        } else {
+          m.targetX = alive[0].x;
+          m.targetY = alive[0].y;
+          m.desc = `Zlikwiduj wrogi gang (pozostało: ${alive.length}).`;
+        }
+      } else if (m.type === "escape") {
+        m.timer -= dt;
+        if (m.timer <= 0 || player.wanted === 0) {
+          completeMission(m);
+        }
+      }
+    }
+
+    function completeMission(m) {
+      player.cash += m.reward;
+      missionState.completedCount++;
+      missionState.active = null;
+      placeNextMissionMarker();
+      sound.playCash();
+      showBanner("MISJA UKOŃCZONA!", `+ $ ${m.reward} • Świetna robota!`);
+    }
+
+    function failMission(reason) {
+      missionState.active = null;
+      placeNextMissionMarker();
+      sound.playTone(220, 110, 0.35, 0.14, 'sawtooth');
+      showBanner("MISJA NIEUDANA", reason);
+    }
+
+    /* =========================================================================
+       KOLIZJE I POMOCNIKI FIZYKI
+       ========================================================================= */
+    function resolveCircleRect(cx, cy, cr, rx, ry, rw, rh) {
+      const closestX = Math.max(rx, Math.min(cx, rx + rw));
+      const closestY = Math.max(ry, Math.min(cy, ry + rh));
+      const dx = cx - closestX;
+      const dy = cy - closestY;
+      const distSq = dx * dx + dy * dy;
+      if (distSq < cr * cr) {
+        const dist = Math.sqrt(distSq) || 0.001;
+        const overlap = cr - dist;
+        return { hit: true, nx: dx / dist, ny: dy / dist, overlap };
+      }
+      return { hit: false };
+    }
+
+    function pointInAnyBuilding(x, y, margin = 0) {
+      for (let i = 0; i < buildings.length; i++) {
+        const b = buildings[i];
+        if (x > b.x - margin && x < b.x + b.w + margin && y > b.y - margin && y < b.y + b.h + margin) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function getDistrictName(x, y) {
+      if (x >= OCEAN_X) return "OCEAN ATLANTYCKI";
+      if (x >= BEACH_X) return "ZŁOTA PLAŻA";
+      if (x >= 1880) return "NEONOWA PROMENADA";
+      if (x < 920 || y >= 2250) return "DZIELNICA PORTOWA";
+      return "CENTRUM NEO LEONIDY";
+    }
+
+    /* =========================================================================
+       CZĄSTECZKI I EFEKTY
+       ========================================================================= */
+    function spawnParticle(x, y, vx, vy, size, color, life, type = "smoke") {
+      if (particles.length > 360) particles.shift();
+      particles.push({ x, y, vx, vy, size, color, life, maxLife: life, type });
+    }
+
+    function triggerExplosion(x, y) {
+      sound.playExplosion();
+      screenShake = Math.max(screenShake, 18);
+
+      // Fala uderzeniowa i ogień
+      spawnParticle(x, y, 0, 0, 18, "#ffbe0b", 0.45, "ring");
+      for (let i = 0; i < 34; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const sp = 60 + Math.random() * 280;
+        const cols = ["#ffbe0b", "#ff5400", "#ff2a85", "#444"];
+        spawnParticle(x, y, Math.cos(a) * sp, Math.sin(a) * sp, 7 + Math.random() * 14, cols[i % cols.length], 0.45 + Math.random() * 0.55, "fire");
+      }
+
+      // Obrażenia obszarowe
+      const blastR = 145;
+      for (const n of npcs) {
+        if (n.hp > 0 && Math.hypot(n.x - x, n.y - y) < blastR) {
+          n.hp = 0;
+        }
+      }
+      const px = player.inVehicle ? player.inVehicle.x : player.x;
+      const py = player.inVehicle ? player.inVehicle.y : player.y;
+      if (Math.hypot(px - x, py - y) < blastR) {
+        damagePlayer(45);
+      }
+      addWanted(1);
+    }
+
+    /* =========================================================================
+       SYSTEM POSZUKIWAŃ I POLICJA
+       ========================================================================= */
+    function addWanted(amount) {
+      if (amount <= 0) return;
+      player.wanted = Math.min(5, Math.max(player.wanted, 0) + amount);
+      player.wantedDecay = 22 + player.wanted * 6;
+    }
+
+    function spawnPoliceUnit() {
+      const px = player.inVehicle ? player.inVehicle.x : player.x;
+      const py = player.inVehicle ? player.inVehicle.y : player.y;
+
+      // Znajdź drogę w bezpiecznej odległości od gracza (poza ekranem)
+      let bestX = 1060, bestY = 1060;
+      for (let tries = 0; tries < 12; tries++) {
+        const rx = ROAD_XS[Math.floor(Math.random() * ROAD_XS.length)];
+        const ry = ROAD_YS[Math.floor(Math.random() * ROAD_YS.length)];
+        const d = Math.hypot(rx - px, ry - py);
+        if (d > 620 && d < 1450) {
+          bestX = rx;
+          bestY = ry;
+          break;
+        }
+      }
+      spawnVehicle("police", bestX, bestY, Math.atan2(py - bestY, px - bestX), "police");
+    }
+
+    /* =========================================================================
+       AKCJE GRACZA (STRZELANIE, WSIADANIE, PRZEŁĄCZANIE, OBRAŻENIA)
+       ========================================================================= */
+    function switchCharacter() {
+      player.charIdx = (player.charIdx + 1) % CHARACTERS.length;
+      const c = CHARACTERS[player.charIdx];
+      showBanner(`BOHATER: ${c.name}`, c.id === 0 ? "Bonus: Sprint i Celność" : "Bonus: Prowadzenie i Wytrzymałość");
+      sound.playTone(320, 640, 0.16, 0.1, 'triangle');
+    }
+
+    function tryToggleVehicle() {
+      if (player.inVehicle) {
+        // Wysiadanie z auta
+        const v = player.inVehicle;
+        v.driver = null;
+        player.inVehicle = null;
+        const exitAngle = v.angle - Math.PI / 2;
+        let ex = v.x + Math.cos(exitAngle) * 34;
+        let ey = v.y + Math.sin(exitAngle) * 34;
+        if (pointInAnyBuilding(ex, ey, 14)) {
+          ex = v.x - Math.cos(exitAngle) * 34;
+          ey = v.y - Math.sin(exitAngle) * 34;
+        }
+        player.x = ex;
+        player.y = ey;
+        sound.playTone(260, 180, 0.1, 0.08, 'sine');
+        return;
+      }
+
+      // Szukaj najbliższego niezniszczonego pojazdu
+      let nearest = null;
+      let bestDist = 72;
+      for (const v of vehicles) {
+        if (v.destroyed) continue;
+        const d = Math.hypot(v.x - player.x, v.y - player.y);
+        if (d < bestDist) {
+          bestDist = d;
+          nearest = v;
+        }
+      }
+
+      if (nearest) {
+        if (nearest.driver === "npc" || nearest.driver === "police") {
+          // Kradzież jadącego auta
+          addWanted(nearest.driver === "police" ? 2 : 1);
+          // Wyrzuć kierowcę
+          npcs.push({
+            x: nearest.x + 28, y: nearest.y + 28, vx: 0, vy: 0, angle: 0, r: 12,
+            hp: 50, maxHp: 50, type: nearest.driver === "police" ? "police" : "ped",
+            color: nearest.driver === "police" ? "#1d3557" : "#f4a261",
+            state: nearest.driver === "police" ? "shoot" : "flee",
+            timer: 4, shootCooldown: 0.5
+          });
+        }
+        nearest.driver = "player";
+        player.inVehicle = nearest;
+        sound.playTone(140, 320, 0.16, 0.1, 'sawtooth');
+      }
+    }
+
+    function fireWeapon() {
+      const w = WEAPONS[player.weaponIdx];
+      if (player.fireCooldown > 0) return;
+      if (!w.infinite && w.ammo <= 0) {
+        player.weaponIdx = 0; // Przełącz na pistolet
+        return;
+      }
+      if (!w.infinite) w.ammo--;
+      player.fireCooldown = w.fireRate;
+
+      const char = CHARACTERS[player.charIdx];
+      const spread = w.spread * char.spreadMult;
+
+      for (let i = 0; i < w.pellets; i++) {
+        const a = player.angle + (Math.random() - 0.5) * spread;
+        bullets.push({
+          x: player.x + Math.cos(player.angle) * 18,
+          y: player.y + Math.sin(player.angle) * 18,
+          vx: Math.cos(a) * w.speed,
+          vy: Math.sin(a) * w.speed,
+          damage: w.damage,
+          owner: "player",
+          life: w.range,
+          color: w.color
+        });
+      }
+
+      // Błysk z lufy
+      spawnParticle(
+        player.x + Math.cos(player.angle) * 20,
+        player.y + Math.sin(player.angle) * 20,
+        0, 0, 9, "#fff275", 0.06, "fire"
+      );
+      sound.playShot(player.weaponIdx);
+      screenShake = Math.max(screenShake, player.weaponIdx === 2 ? 5 : 2);
+
+      // Przechodnie w pobliżu uciekają w panice
+      for (const n of npcs) {
+        if (n.type === "ped" && n.hp > 0 && Math.hypot(n.x - player.x, n.y - player.y) < 380) {
+          n.state = "flee";
+          n.timer = 6;
+        }
+      }
+    }
+
+    function damagePlayer(dmg) {
+      if (player.invulnTimer > 0) return;
+      const mult = CHARACTERS[player.charIdx].damageTakenMult;
+      let actual = dmg * mult;
+      if (player.armor > 0) {
+        const absorbed = Math.min(player.armor, actual * 0.75);
+        player.armor -= absorbed;
+        actual -= absorbed;
+      }
+      player.hp -= actual;
+      screenShake = Math.max(screenShake, 6);
+
+      if (player.hp <= 0) {
+        // POWALONY (Respawn pod szpitalem)
+        if (player.inVehicle) {
+          player.inVehicle.driver = null;
+          player.inVehicle = null;
+        }
+        player.hp = player.maxHp;
+        player.armor = 30;
+        player.wanted = 0;
+        player.cash = Math.max(0, player.cash - 200);
+        player.x = HOSPITAL.x + 85;
+        player.y = HOSPITAL.y + 85;
+        player.invulnTimer = 2.0;
+        if (missionState.active) failMission("ZOSTAŁEŚ POWALONY!");
+        showBanner("POWALONY!", "Koszt leczenia w Neo Leonida Med: -$200");
+        sound.playTone(200, 80, 0.5, 0.18, 'sawtooth');
+      }
+    }
+
+    /* =========================================================================
+       AKTUALIZACJA LOGIKI GRY (60 FPS DELTA TIME)
+       ========================================================================= */
+    function update(dt) {
+      // Cykl dnia i nocy (pełna doba ~ 4 minuty)
+      timeOfDay = (timeOfDay + dt * 0.1) % 24;
+
+      if (player.fireCooldown > 0) player.fireCooldown -= dt;
+      if (player.invulnTimer > 0) player.invulnTimer -= dt;
+      if (screenShake > 0) screenShake = Math.max(0, screenShake - dt * 32);
+
+      // Aktualizacja pozycji myszy w świecie
+      mouse.worldX = camera.x + (mouse.x - canvas.width / 2);
+      mouse.worldY = camera.y + (mouse.y - canvas.height / 2);
+
+      // 1. STEROWANIE GRACZEM (PIESZO LUB W POJEŹDZIE)
+      if (!player.inVehicle) {
+        updatePlayerOnFoot(dt);
+      } else {
+        updatePlayerInVehicle(dt, player.inVehicle);
+      }
+
+      // 2. AKTUALIZACJA POJAZDÓW (FIZYKA, AI RUCHU, POLICJA, ZNISZCZENIA)
+      updateVehicles(dt);
+
+      // 3. AKTUALIZACJA NPC (PRZECHODNIE, POLICJANCI, GANG)
+      updateNPCs(dt);
+
+      // 4. POCISKI
+      updateBullets(dt);
+
+      // 5. CZĄSTECZKI I ŚLADY OPON
+      updateParticles(dt);
+
+      // 6. ZNAJDŹKI I WARSZTAT NEON SPRAY
+      updatePickupsAndSpray(dt);
+
+      // 7. SYSTEM POSZUKIWAŃ
+      updateWantedSystem(dt);
+
+      // 8. MISJE
+      updateMission(dt);
+
+      // 9. PŁYNNA KAMERA
+      const targetX = player.inVehicle ? player.inVehicle.x + player.inVehicle.vx * 0.25 : player.x;
+      const targetY = player.inVehicle ? player.inVehicle.y + player.inVehicle.vy * 0.25 : player.y;
+      camera.x += (targetX - camera.x) * Math.min(1, dt * 6.5);
+      camera.y += (targetY - camera.y) * Math.min(1, dt * 6.5);
+
+      // Baner timer
+      if (bannerTimer > 0) {
+        bannerTimer -= dt;
+        if (bannerTimer <= 0) document.getElementById('bannerOverlay').classList.remove('show');
+      }
+
+      // Aktualizacja HUD
+      updateHUD();
+    }
+
+    function updatePlayerOnFoot(dt) {
+      let mx = 0, my = 0;
+      if (keys['KeyW'] || keys['ArrowUp']) my -= 1;
+      if (keys['KeyS'] || keys['ArrowDown']) my += 1;
+      if (keys['KeyA'] || keys['ArrowLeft']) mx -= 1;
+      if (keys['KeyD'] || keys['ArrowRight']) mx += 1;
+
+      if (touchState.active) {
+        mx += touchState.dx;
+        my += touchState.dy;
+      }
+
+      const len = Math.hypot(mx, my);
+      if (len > 0.05) {
+        mx /= Math.max(1, len);
+        my /= Math.max(1, len);
+        player.walkPhase += dt * 11;
+      }
+
+      const char = CHARACTERS[player.charIdx];
+      const sprinting = keys['ShiftLeft'] || keys['ShiftRight'] || touchState.boost;
+      let baseSpeed = 195 * char.speedMult * (sprinting ? 1.48 : 1.0);
+
+      // Woda oceanu spowalnia pływaka
+      if (player.x > OCEAN_X) baseSpeed *= 0.48;
+
+      player.vx = mx * baseSpeed;
+      player.vy = my * baseSpeed;
+      player.x = Math.max(24, Math.min(WORLD_SIZE - 24, player.x + player.vx * dt));
+      player.y = Math.max(24, Math.min(WORLD_SIZE - 24, player.y + player.vy * dt));
+
+      // Kolizje z budynkami
+      for (const b of buildings) {
+        const res = resolveCircleRect(player.x, player.y, player.r, b.x, b.y, b.w, b.h);
+        if (res.hit) {
+          player.x += res.nx * res.overlap;
+          player.y += res.ny * res.overlap;
+        }
+      }
+
+      // Celowanie myszą (lub kierunkiem ruchu na dotyku)
+      if (touchState.active && len > 0.15) {
+        player.angle = Math.atan2(my, mx);
+      } else if (!touchState.active) {
+        player.angle = Math.atan2(mouse.worldY - player.y, mouse.worldX - player.x);
+      }
+
+      if (mouse.down || touchState.shoot) {
+        fireWeapon();
+      }
+    }
+
+    function updatePlayerInVehicle(dt, v) {
+      const char = CHARACTERS[player.charIdx];
+      let throttle = 0, steer = 0;
+      if (keys['KeyW'] || keys['ArrowUp']) throttle += 1;
+      if (keys['KeyS'] || keys['ArrowDown']) throttle -= 1;
+      if (keys['KeyA'] || keys['ArrowLeft']) steer -= 1;
+      if (keys['KeyD'] || keys['ArrowRight']) steer += 1;
+
+      if (touchState.active) {
+        throttle -= touchState.dy;
+        steer += touchState.dx;
+      }
+
+      const handbrake = keys['Space'];
+      const useNitro = (keys['ShiftLeft'] || keys['ShiftRight'] || touchState.boost) && v.nitro > 0 && throttle > 0;
+
+      const maxSpd = v.maxSpeed * char.carSpeedMult * (useNitro ? 1.38 : 1.0);
+      const accel = v.accel * (useNitro ? 1.85 : 1.0);
+
+      if (useNitro) {
+        v.nitro = Math.max(0, v.nitro - dt * 38);
+        // Płomienie nitro z rury wydechowej
+        const bx = v.x - Math.cos(v.angle) * (v.w * 0.55);
+        const by = v.y - Math.sin(v.angle) * (v.w * 0.55);
+        spawnParticle(bx, by, -Math.cos(v.angle) * 90 + (Math.random() - 0.5) * 40, -Math.sin(v.angle) * 90 + (Math.random() - 0.5) * 40, 6 + Math.random() * 4, Math.random() < 0.5 ? "#00f0ff" : "#ff2a85", 0.22, "fire");
+      } else {
+        v.nitro = Math.min(100, v.nitro + dt * 14);
+      }
+
+      if (throttle > 0) {
+        v.speed += throttle * accel * dt;
+      } else if (throttle < 0) {
+        v.speed += throttle * accel * 0.85 * dt;
+      } else {
+        v.speed *= Math.pow(0.28, dt);
+      }
+
+      if (handbrake) {
+        v.speed *= Math.pow(0.45, dt);
+      }
+
+      // Piasek na plaży lekko spowalnia, ocean blokuje wjazd
+      if (v.x > BEACH_X && v.x <= OCEAN_X) {
+        v.speed *= Math.pow(0.7, dt);
+      } else if (v.x > OCEAN_X) {
+        v.x = OCEAN_X - 4;
+        v.speed *= -0.3;
+      }
+
+      v.speed = Math.max(-maxSpd * 0.42, Math.min(maxSpd, v.speed));
+
+      // Skręcanie zależne od prędkości
+      const speedFactor = Math.min(1, Math.abs(v.speed) / 130);
+      const dirSign = v.speed >= 0 ? 1 : -1;
+      const turnRate = v.turn * (handbrake ? 1.48 : 1.0);
+      v.angle += steer * turnRate * speedFactor * dirSign * dt;
+
+      // Fizyka driftu (bezwładność wektora prędkości)
+      const targetVx = Math.cos(v.angle) * v.speed;
+      const targetVy = Math.sin(v.angle) * v.speed;
+      const grip = handbrake ? 2.1 : 8.2;
+      v.vx += (targetVx - v.vx) * Math.min(1, grip * dt);
+      v.vy += (targetVy - v.vy) * Math.min(1, grip * dt);
+
+      const slip = Math.hypot(targetVx - v.vx, targetVy - v.vy);
+      v.drifting = (handbrake || slip > 95) && Math.abs(v.speed) > 130;
+
+      if (v.drifting) {
+        // Ślady opon i dym
+        const rx = v.x - Math.cos(v.angle) * 18;
+        const ry = v.y - Math.sin(v.angle) * 18;
+        const perpX = -Math.sin(v.angle) * 9;
+        const perpY = Math.cos(v.angle) * 9;
+        if (skidMarks.length > 260) skidMarks.shift();
+        skidMarks.push({ x: rx + perpX, y: ry + perpY, a: 0.45 });
+        skidMarks.push({ x: rx - perpX, y: ry - perpY, a: 0.45 });
+        if (Math.random() < 0.45) {
+          spawnParticle(rx, ry, (Math.random() - 0.5) * 35, (Math.random() - 0.5) * 35, 8, "rgba(210,210,225,0.5)", 0.45, "smoke");
+        }
+      }
+
+      player.x = v.x;
+      player.y = v.y;
+      player.angle = v.angle;
+    }
+
+    function updateVehicles(dt) {
+      let policeNear = false;
+
+      for (let i = vehicles.length - 1; i >= 0; i--) {
+        const v = vehicles[i];
+        if (v.destroyed) continue;
+
+        if (v.driver === "npc") {
+          updateNPCCarAI(v, dt);
+        } else if (v.driver === "police") {
+          updatePoliceCarAI(v, dt);
+          const px = player.inVehicle ? player.inVehicle.x : player.x;
+          const py = player.inVehicle ? player.inVehicle.y : player.y;
+          if (Math.hypot(v.x - px, v.y - py) < 760 && player.wanted > 0) policeNear = true;
+        } else if (v.driver === null) {
+          v.vx *= Math.pow(0.08, dt);
+          v.vy *= Math.pow(0.08, dt);
+          v.speed *= Math.pow(0.08, dt);
+        }
+
+        // Przesunięcie pojazdu
+        v.x = Math.max(36, Math.min(OCEAN_X, v.x + v.vx * dt));
+        v.y = Math.max(36, Math.min(WORLD_SIZE - 36, v.y + v.vy * dt));
+
+        // Kolizje z budynkami
+        for (const b of buildings) {
+          const res = resolveCircleRect(v.x, v.y, 20, b.x, b.y, b.w, b.h);
+          if (res.hit) {
+            v.x += res.nx * res.overlap;
+            v.y += res.ny * res.overlap;
+            const impact = Math.hypot(v.vx, v.vy);
+            if (impact > 180) {
+              v.hp -= (impact - 150) * 0.08;
+              if (v.driver === "player") screenShake = Math.max(screenShake, 5);
+            }
+            v.vx *= 0.35;
+            v.vy *= 0.35;
+            v.speed *= 0.35;
+          }
+        }
+
+        // Kolizje auto-auto
+        for (let j = i - 1; j >= 0; j--) {
+          const o = vehicles[j];
+          if (o.destroyed) continue;
+          const dx = v.x - o.x;
+          const dy = v.y - o.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 40 && dist > 0.1) {
+            const nx = dx / dist, ny = dy / dist;
+            const push = (40 - dist) * 0.5;
+            v.x += nx * push; v.y += ny * push;
+            o.x -= nx * push; o.y -= ny * push;
+            const relSpd = Math.hypot(v.vx - o.vx, v.vy - o.vy);
+            if (relSpd > 140) {
+              v.hp -= relSpd * 0.04;
+              o.hp -= relSpd * 0.04;
+              if ((v.driver === "player" && o.driver === "police") || (o.driver === "player" && v.driver === "police")) {
+                addWanted(1);
+              }
+            }
+            v.vx += nx * 70; v.vy += ny * 70;
+            o.vx -= nx * 70; o.vy -= ny * 70;
+          }
+        }
+
+        // Potrącenia przechodniów przez jadące auto
+        const spd = Math.hypot(v.vx, v.vy);
+        if (spd > 95) {
+          for (const n of npcs) {
+            if (n.hp <= 0) continue;
+            if (Math.hypot(n.x - v.x, n.y - v.y) < 26) {
+              n.hp -= spd * 0.35;
+              n.vx += v.vx * 0.6;
+              n.vy += v.vy * 0.6;
+              spawnParticle(n.x, n.y, (Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60, 5, "#ff2a55", 0.35, "blood");
+              if (v.driver === "player") {
+                addWanted(n.type === "police" ? 2 : 1);
+                if (n.hp <= 0) player.cash += 35;
+              }
+            }
+          }
+        }
+
+        // Dymienie przy niskim HP i eksplozja przy 0 HP
+        if (v.hp < v.maxHp * 0.42 && v.hp > 0) {
+          v.smokeTimer -= dt;
+          if (v.smokeTimer <= 0) {
+            v.smokeTimer = 0.09;
+            const col = v.hp < v.maxHp * 0.2 ? "#ff5400" : "rgba(60,60,70,0.75)";
+            spawnParticle(v.x + Math.cos(v.angle) * 16, v.y + Math.sin(v.angle) * 16, (Math.random() - 0.5) * 25, -25, 9, col, 0.6, "smoke");
+          }
+        }
+
+        if (v.hp <= 0) {
+          v.destroyed = true;
+          if (player.inVehicle === v) {
+            player.inVehicle = null;
+            damagePlayer(55);
+          }
+          triggerExplosion(v.x, v.y);
+          // Usuń wrak po chwili
+          setTimeout(() => {
+            const idx = vehicles.indexOf(v);
+            if (idx !== -1) vehicles.splice(idx, 1);
+          }, 5000);
+        }
+      }
+
+      sound.updateSiren(dt, policeNear);
+    }
+
+    function updateNPCCarAI(v, dt) {
+      v.aiTurnCooldown -= dt;
+      const cruiseSpeed = 165;
+
+      // Zawróć na krawędzi mapy lub przed plażą
+      if (v.x > BEACH_X - 75 && Math.cos(v.aiDir) > 0.5) v.aiDir = Math.PI;
+      if (v.x < 110 && Math.cos(v.aiDir) < -0.5) v.aiDir = 0;
+      if (v.y > WORLD_SIZE - 110 && Math.sin(v.aiDir) > 0.5) v.aiDir = -Math.PI / 2;
+      if (v.y < 110 && Math.sin(v.aiDir) < -0.5) v.aiDir = Math.PI / 2;
+
+      // Losowy skręt na skrzyżowaniach
+      if (v.aiTurnCooldown <= 0) {
+        for (const rx of ROAD_XS) {
+          for (const ry of ROAD_YS) {
+            if (Math.hypot(v.x - rx, v.y - ry) < 38) {
+              if (Math.random() < 0.45) {
+                v.aiDir += (Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+              }
+              v.aiTurnCooldown = 2.2;
+            }
+          }
+        }
+      }
+
+      // Płynny obrót w stronę aiDir
+      let diff = v.aiDir - v.angle;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      v.angle += diff * Math.min(1, dt * 5);
+
+      v.speed = cruiseSpeed;
+      v.vx = Math.cos(v.angle) * v.speed;
+      v.vy = Math.sin(v.angle) * v.speed;
+    }
+
+    function updatePoliceCarAI(v, dt) {
+      v.sirenPhase += dt * 11;
+      if (player.wanted <= 0) {
+        // Patroluj spokojnie
+        updateNPCCarAI(v, dt);
+        return;
+      }
+
+      const tx = player.inVehicle ? player.inVehicle.x : player.x;
+      const ty = player.inVehicle ? player.inVehicle.y : player.y;
+      const dist = Math.hypot(tx - v.x, ty - v.y);
+      const targetAngle = Math.atan2(ty - v.y, tx - v.x);
+
+      let diff = targetAngle - v.angle;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      v.angle += Math.max(-3.2 * dt, Math.min(3.2 * dt, diff));
+
+      const chaseSpeed = 285 + player.wanted * 32;
+      v.speed += (chaseSpeed - v.speed) * Math.min(1, dt * 3);
+      v.vx = Math.cos(v.angle) * v.speed;
+      v.vy = Math.sin(v.angle) * v.speed;
+
+      // Jeśli gracz jest pieszo i policja blisko — policjant wysiada i strzela!
+      if (!player.inVehicle && dist < 175 && Math.random() < dt * 0.9) {
+        v.driver = null;
+        v.speed *= 0.2;
+        npcs.push({
+          x: v.x + 28, y: v.y + 28, vx: 0, vy: 0, angle: targetAngle, r: 12,
+          hp: 65, maxHp: 65, type: "police", color: "#1d3557", state: "shoot",
+          timer: 0, shootCooldown: 0.65
+        });
+      }
+    }
+
+    function updateNPCs(dt) {
+      const px = player.inVehicle ? player.inVehicle.x : player.x;
+      const py = player.inVehicle ? player.inVehicle.y : player.y;
+
+      for (let i = npcs.length - 1; i >= 0; i--) {
+        const n = npcs[i];
+        if (n.hp <= 0) {
+          // Zostaw gotówkę po pokonanym wrogu
+          if (n.type === "gang" || n.type === "police") {
+            player.cash += n.type === "gang" ? 120 : 60;
+          }
+          npcs.splice(i, 1);
+          continue;
+        }
+
+        if (n.type === "ped") {
+          n.timer -= dt;
+          if (n.state === "flee") {
+            const away = Math.atan2(n.y - py, n.x - px);
+            n.angle = away;
+            n.vx = Math.cos(away) * 145;
+            n.vy = Math.sin(away) * 145;
+            if (n.timer <= 0) n.state = "walk";
+          } else {
+            if (n.timer <= 0) {
+              n.angle += (Math.random() - 0.5) * 2.2;
+              n.timer = 1.8 + Math.random() * 2.5;
+            }
+            n.vx = Math.cos(n.angle) * 48;
+            n.vy = Math.sin(n.angle) * 48;
+          }
+        } else if (n.type === "police" || n.type === "gang") {
+          const dist = Math.hypot(px - n.x, py - n.y);
+          const ang = Math.atan2(py - n.y, px - n.x);
+          n.angle = ang;
+
+          if (n.type === "police" && player.wanted <= 0) {
+            n.vx = 0; n.vy = 0;
+          } else if (dist < 420) {
+            if (dist > 155) {
+              n.vx = Math.cos(ang) * 125;
+              n.vy = Math.sin(ang) * 125;
+            } else {
+              n.vx *= 0.85;
+              n.vy *= 0.85;
+            }
+            n.shootCooldown -= dt;
+            if (n.shootCooldown <= 0 && dist < 350) {
+              n.shootCooldown = n.type === "police" ? 0.85 : 0.72;
+              const spread = (Math.random() - 0.5) * 0.16;
+              bullets.push({
+                x: n.x + Math.cos(ang) * 16,
+                y: n.y + Math.sin(ang) * 16,
+                vx: Math.cos(ang + spread) * 660,
+                vy: Math.sin(ang + spread) * 660,
+                damage: n.type === "police" ? 9 : 11,
+                owner: "enemy",
+                life: 0.7,
+                color: n.type === "police" ? "#00f0ff" : "#ff2a85"
+              });
+              sound.playShot(0);
+            }
+          }
+        }
+
+        n.x = Math.max(24, Math.min(OCEAN_X - 10, n.x + n.vx * dt));
+        n.y = Math.max(24, Math.min(WORLD_SIZE - 24, n.y + n.vy * dt));
+
+        for (const b of buildings) {
+          const res = resolveCircleRect(n.x, n.y, n.r, b.x, b.y, b.w, b.h);
+          if (res.hit) {
+            n.x += res.nx * res.overlap;
+            n.y += res.ny * res.overlap;
+            n.angle += Math.PI * 0.5;
+          }
+        }
+      }
+    }
+
+    function updateBullets(dt) {
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        const b = bullets[i];
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+        b.life -= dt;
+
+        let remove = b.life <= 0 || pointInAnyBuilding(b.x, b.y, 0);
+
+        if (!remove && b.owner === "player") {
+          // Trafienie w NPC
+          for (const n of npcs) {
+            if (n.hp > 0 && Math.hypot(n.x - b.x, n.y - b.y) < n.r + 4) {
+              n.hp -= b.damage;
+              spawnParticle(b.x, b.y, b.vx * 0.08, b.vy * 0.08, 4, "#ff2a55", 0.25, "blood");
+              if (n.type === "ped") addWanted(1);
+              if (n.type === "police") addWanted(2);
+              remove = true;
+              break;
+            }
+          }
+          // Trafienie w pojazdy
+          if (!remove) {
+            for (const v of vehicles) {
+              if (!v.destroyed && v !== player.inVehicle && Math.hypot(v.x - b.x, v.y - b.y) < 26) {
+                v.hp -= b.damage * 0.8;
+                spawnParticle(b.x, b.y, (Math.random() - 0.5) * 90, (Math.random() - 0.5) * 90, 4, "#ffbe0b", 0.2, "spark");
+                if (v.driver === "police") addWanted(1);
+                remove = true;
+                break;
+              }
+            }
+          }
+        } else if (!remove && b.owner === "enemy") {
+          const px = player.inVehicle ? player.inVehicle.x : player.x;
+          const py = player.inVehicle ? player.inVehicle.y : player.y;
+          const hitR = player.inVehicle ? 25 : player.r + 3;
+          if (Math.hypot(px - b.x, py - b.y) < hitR) {
+            if (player.inVehicle) {
+              player.inVehicle.hp -= b.damage * 0.7;
+              damagePlayer(b.damage * 0.25);
+            } else {
+              damagePlayer(b.damage);
+            }
+            remove = true;
+          }
+        }
+
+        if (remove) bullets.splice(i, 1);
+      }
+    }
+
+    function updateParticles(dt) {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+        if (p.type === "ring") p.size += dt * 260;
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+      for (let i = skidMarks.length - 1; i >= 0; i--) {
+        skidMarks[i].a -= dt * 0.04;
+        if (skidMarks[i].a <= 0) skidMarks.splice(i, 1);
+      }
+    }
+
+    function updatePickupsAndSpray(dt) {
+      const px = player.inVehicle ? player.inVehicle.x : player.x;
+      const py = player.inVehicle ? player.inVehicle.y : player.y;
+
+      // Znajdźki
+      for (const p of pickups) {
+        if (p.respawn > 0) {
+          p.respawn -= dt;
+          continue;
+        }
+        if (Math.hypot(px - p.x, py - p.y) < 32) {
+          p.respawn = 35;
+          if (p.type === "cash") {
+            player.cash += 350;
+            sound.playCash();
+            showBanner("+$350", "Zebrano gotówkę!");
+          } else if (p.type === "health") {
+            player.hp = player.maxHp;
+            sound.playTone(520, 880, 0.2, 0.1);
+            showBanner("APTECZKA", "Zdrowie odnowione do 100%");
+          } else if (p.type === "armor") {
+            player.armor = player.maxArmor;
+            sound.playTone(400, 740, 0.2, 0.1);
+            showBanner("KAMIZELKA", "Pancerz odnowiony do 100%");
+          } else if (p.type === "ammo") {
+            WEAPONS[1].ammo += 80;
+            WEAPONS[2].ammo += 18;
+            sound.playTone(620, 960, 0.18, 0.1);
+            showBanner("AMUNICJA", "+80 SMG • +18 Strzelba");
+          }
+        }
+      }
+
+      // Warsztat NEON SPRAY
+      if (player.inVehicle && Math.hypot(px - SPRAY_SHOP.x, py - SPRAY_SHOP.y) < SPRAY_SHOP.r) {
+        const v = player.inVehicle;
+        const needsService = v.hp < v.maxHp || player.wanted > 0;
+        if (needsService && player.cash >= SPRAY_SHOP.cost && !v._sprayCooldown) {
+          player.cash -= SPRAY_SHOP.cost;
+          v.hp = v.maxHp;
+          const palette = ["#ff2a85", "#00f0ff", "#ffbe0b", "#9d4edd", "#06d6a0", "#ff5400"];
+          v.color = palette[Math.floor(Math.random() * palette.length)];
+          player.wanted = 0;
+          v._sprayCooldown = true;
+          setTimeout(() => { v._sprayCooldown = false; }, 4000);
+          sound.playSpray();
+          showBanner("NEON SPRAY", "Auto naprawione i przemalowane! Pościg zgubiony (-$500)");
+        }
+      }
+    }
+
+    function updateWantedSystem(dt) {
+      if (player.wanted <= 0) return;
+
+      player.wantedDecay -= dt;
+      if (player.wantedDecay <= 0) {
+        player.wanted = Math.max(0, player.wanted - 1);
+        player.wantedDecay = 18;
+      }
+
+      // Limit aktywnych radiowozów zależny od poziomu gwiazdek
+      const activePoliceCars = vehicles.filter(v => v.driver === "police" && !v.destroyed).length;
+      const desired = Math.min(5, player.wanted + 1);
+      player.policeSpawnTimer -= dt;
+      if (activePoliceCars < desired && player.policeSpawnTimer <= 0) {
+        spawnPoliceUnit();
+        player.policeSpawnTimer = Math.max(2.5, 6 - player.wanted * 0.7);
+      }
+    }
+
+    /* =========================================================================
+       RENDEROWANIE ŚWIATA (CANVAS 2D + OŚWIETLENIE NOCNE + RADAR)
+       ========================================================================= */
+    function render() {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.save();
+      // Drżenie kamery przy eksplozjach/strzałach
+      const shakeX = screenShake > 0 ? (Math.random() - 0.5) * screenShake : 0;
+      const shakeY = screenShake > 0 ? (Math.random() - 0.5) * screenShake : 0;
+      ctx.translate(w / 2 - camera.x + shakeX, h / 2 - camera.y + shakeY);
+
+      const viewLeft = camera.x - w / 2 - 140;
+      const viewRight = camera.x + w / 2 + 140;
+      const viewTop = camera.y - h / 2 - 140;
+      const viewBottom = camera.y + h / 2 + 140;
+
+      // 1. PODŁOŻE (Trawa / Chodniki / Plaża / Ocean)
+      ctx.fillStyle = "#1c182c"; // Bazowy beton miasta
+      ctx.fillRect(0, 0, BEACH_X, WORLD_SIZE);
+
+      // Złota Plaża
+      const beachGrad = ctx.createLinearGradient(BEACH_X, 0, OCEAN_X, 0);
+      beachGrad.addColorStop(0, "#e6b87d");
+      beachGrad.addColorStop(1, "#f4d19b");
+      ctx.fillStyle = beachGrad;
+      ctx.fillRect(BEACH_X, 0, OCEAN_X - BEACH_X, WORLD_SIZE);
+
+      // Ocean z animowanymi falami
+      const oceanGrad = ctx.createLinearGradient(OCEAN_X, 0, WORLD_SIZE, 0);
+      oceanGrad.addColorStop(0, "#00d4ff");
+      oceanGrad.addColorStop(0.25, "#0088cc");
+      oceanGrad.addColorStop(1, "#072a5e");
+      ctx.fillStyle = oceanGrad;
+      ctx.fillRect(OCEAN_X, 0, WORLD_SIZE - OCEAN_X, WORLD_SIZE);
+
+      // Piana morska na linii brzegu
+      const waveOff = Math.sin(performance.now() * 0.0028) * 9;
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      for (let y = Math.max(0, viewTop); y < Math.min(WORLD_SIZE, viewBottom); y += 40) {
+        const wx = OCEAN_X + waveOff + Math.sin(y * 0.03 + performance.now() * 0.002) * 6;
+        if (y === Math.max(0, viewTop)) ctx.moveTo(wx, y);
+        else ctx.lineTo(wx, y);
+      }
+      ctx.stroke();
+
+      // 2. DROGI I PASY RUCHU
+      ctx.fillStyle = "#262535";
+      for (const rx of ROAD_XS) ctx.fillRect(rx - ROAD_WIDTH / 2, 0, ROAD_WIDTH, WORLD_SIZE);
+      for (const ry of ROAD_YS) ctx.fillRect(0, ry - ROAD_WIDTH / 2, BEACH_X, ROAD_WIDTH);
+
+      // Przerywane linie pasów
+      ctx.strokeStyle = "rgba(255, 190, 11, 0.55)";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([22, 20]);
+      for (const rx of ROAD_XS) {
+        ctx.beginPath();
+        ctx.moveTo(rx, 0);
+        ctx.lineTo(rx, WORLD_SIZE);
+        ctx.stroke();
+      }
+      for (const ry of ROAD_YS) {
+        ctx.beginPath();
+        ctx.moveTo(0, ry);
+        ctx.lineTo(BEACH_X, ry);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // 3. ŚLADY OPON (DRIFT)
+      for (const s of skidMarks) {
+        ctx.fillStyle = `rgba(12, 10, 18, ${s.a})`;
+        ctx.fillRect(s.x - 3, s.y - 3, 6, 6);
+      }
+
+      // 4. WARSZTAT NEON SPRAY — STREFA NA ZIEMI
+      const pulse = 0.75 + Math.sin(performance.now() * 0.006) * 0.25;
+      ctx.save();
+      ctx.strokeStyle = `rgba(0, 240, 255, ${pulse})`;
+      ctx.lineWidth = 4;
+      ctx.fillStyle = "rgba(0, 240, 255, 0.14)";
+      ctx.beginPath();
+      ctx.arc(SPRAY_SHOP.x, SPRAY_SHOP.y, SPRAY_SHOP.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#00f0ff";
+      ctx.font = "900 13px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("NEON SPRAY", SPRAY_SHOP.x, SPRAY_SHOP.y - 4);
+      ctx.fillStyle = "#fff";
+      ctx.font = "700 11px sans-serif";
+      ctx.fillText("$500 • NAPRAWA", SPRAY_SHOP.x, SPRAY_SHOP.y + 12);
+      ctx.restore();
+
+      // 5. ZNACZNIKI MISJI NA MAPIE
+      drawMissionMarkers();
+
+      // 6. ZNAJDŹKI (APTECZKI, GOTÓWKA, PANCERZ, AMMO)
+      for (const p of pickups) {
+        if (p.respawn > 0) continue;
+        if (p.x < viewLeft || p.x > viewRight || p.y < viewTop || p.y > viewBottom) continue;
+        const bob = Math.sin(performance.now() * 0.006 + p.x) * 3;
+        const cols = { cash: "#4ade80", health: "#ff2a55", armor: "#00f0ff", ammo: "#ffbe0b" };
+        const icons = { cash: "$", health: "+", armor: "⛨", ammo: "≡" };
+        ctx.save();
+        ctx.shadowColor = cols[p.type];
+        ctx.shadowBlur = 14;
+        ctx.fillStyle = cols[p.type];
+        ctx.beginPath();
+        ctx.arc(p.x, p.y + bob, 13, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#10081f";
+        ctx.font = "900 14px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(icons[p.type], p.x, p.y + bob + 1);
+        ctx.restore();
+      }
+
+      // 7. LEŻAKI I PARASOLE NA PLAŻY
+      for (const bp of beachProps) {
+        if (bp.x < viewLeft || bp.x > viewRight || bp.y < viewTop || bp.y > viewBottom) continue;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(bp.x - 24, bp.y - 8, 18, 32);
+        ctx.fillStyle = bp.color;
+        ctx.beginPath();
+        ctx.arc(bp.x + 8, bp.y + 8, 17, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.5)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // 8. POJAZDY
+      const darkness = getNightFactor();
+      for (const v of vehicles) {
+        if (v.x < viewLeft || v.x > viewRight || v.y < viewTop || v.y > viewBottom) continue;
+        drawVehicle(v, darkness);
+      }
+
+      // 9. NPC (PRZECHODNIE, POLICJA, GANG)
+      for (const n of npcs) {
+        if (n.x < viewLeft || n.x > viewRight || n.y < viewTop || n.y > viewBottom) continue;
+        drawPerson(n.x, n.y, n.angle, n.color, "#22182b", n.type === "police" || n.type === "gang");
+      }
+
+      // 10. GRACZ (JEŚLI PIESZO)
+      if (!player.inVehicle) {
+        const c = CHARACTERS[player.charIdx];
+        drawPerson(player.x, player.y, player.angle, c.shirt, c.hair, true, true);
+      }
+
+      // 11. POCISKI
+      for (const b of bullets) {
+        ctx.save();
+        ctx.strokeStyle = b.color;
+        ctx.shadowColor = b.color;
+        ctx.shadowBlur = 10;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x - b.vx * 0.025, b.y - b.vy * 0.025);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 12. BUDYNKI (Z NEONAMI I LEKKIM EFEKTEM 2.5D)
+      for (const b of buildings) {
+        if (b.x + b.w < viewLeft || b.x > viewRight || b.y + b.h < viewTop || b.y > viewBottom) continue;
+        // Cień budynku
+        ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
+        ctx.fillRect(b.x + 12, b.y + 12, b.w, b.h);
+
+        // Korpus
+        ctx.fillStyle = b.color;
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+
+        // Dach wewnętrzny
+        ctx.fillStyle = b.roofColor;
+        ctx.fillRect(b.x + 10, b.y + 10, b.w - 20, b.h - 20);
+
+        // Neonowa obwódka dachu (mocniejsza w nocy)
+        ctx.save();
+        ctx.strokeStyle = b.neonColor;
+        ctx.lineWidth = 2.5;
+        if (darkness > 0.2) {
+          ctx.shadowColor = b.neonColor;
+          ctx.shadowBlur = 16 * darkness;
+        }
+        ctx.strokeRect(b.x + 2, b.y + 2, b.w - 4, b.h - 4);
+
+        // Napis neonowy
+        if (b.neonText) {
+          ctx.fillStyle = b.neonColor;
+          ctx.font = "900 13px sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(b.neonText, b.x + b.w / 2, b.y + b.h / 2);
+        }
+        ctx.restore();
+      }
+
+      // 13. PALMY (NAD POJAZDAMI I LUDŹMI)
+      for (const p of palmTrees) {
+        if (p.x < viewLeft || p.x > viewRight || p.y < viewTop || p.y > viewBottom) continue;
+        drawPalmTree(p.x, p.y, p.r);
+      }
+
+      // 14. CZĄSTECZKI (OGIEŃ, DYM, FALE UDERZENIOWE)
+      for (const p of particles) {
+        const a = Math.max(0, p.life / p.maxLife);
+        ctx.save();
+        ctx.globalAlpha = a;
+        if (p.type === "ring") {
+          ctx.strokeStyle = p.color;
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * (p.type === "smoke" ? 1.5 - a * 0.5 : a), 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // 15. LATARNIE ULICZNE (ŚWIATŁO W NOCY)
+      if (darkness > 0.25) {
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (const l of streetLamps) {
+          if (l.x < viewLeft || l.x > viewRight || l.y < viewTop || l.y > viewBottom) continue;
+          const g = ctx.createRadialGradient(l.x, l.y, 2, l.x, l.y, 75);
+          g.addColorStop(0, `rgba(255, 190, 120, ${0.32 * darkness})`);
+          g.addColorStop(1, "rgba(255, 190, 120, 0)");
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(l.x, l.y, 75, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      ctx.restore();
+
+      // 16. FILTR CYKLU DNIA I NOCY (ZŁOTA GODZINA / NEONOWA NOC)
+      drawDayNightOverlay(w, h, darkness);
+
+      // 17. MINIMAPKA / RADAR
+      renderRadar();
+    }
+
+    function getNightFactor() {
+      // 0 = pełny dzień (12:00), 1 = głęboka noc (00:00)
+      if (timeOfDay >= 20 || timeOfDay < 5) return 0.85;
+      if (timeOfDay >= 17 && timeOfDay < 20) return ((timeOfDay - 17) / 3) * 0.85;
+      if (timeOfDay >= 5 && timeOfDay < 8) return ((8 - timeOfDay) / 3) * 0.85;
+      return 0;
+    }
+
+    function drawDayNightOverlay(w, h, darkness) {
+      // Złota godzina (16:30 - 19:30) — ciepły różowo-pomarańczowy blask GTA 6
+      if (timeOfDay >= 16.5 && timeOfDay <= 19.5) {
+        const peak = 1 - Math.abs(timeOfDay - 18) / 1.5;
+        ctx.fillStyle = `rgba(255, 75, 110, ${peak * 0.16})`;
+        ctx.fillRect(0, 0, w, h);
+      }
+      // Nocna poświata fioletowo-granatowa
+      if (darkness > 0.02) {
+        ctx.fillStyle = `rgba(12, 6, 30, ${darkness * 0.56})`;
+        ctx.fillRect(0, 0, w, h);
+      }
+    }
+
+    function drawVehicle(v, darkness) {
+      ctx.save();
+      ctx.translate(v.x, v.y);
+      ctx.rotate(v.angle);
+
+      // Reflektory w nocy
+      if (darkness > 0.25 && !v.destroyed) {
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        const beam = ctx.createLinearGradient(v.w / 2, 0, v.w / 2 + 150, 0);
+        beam.addColorStop(0, `rgba(255, 250, 210, ${0.42 * darkness})`);
+        beam.addColorStop(1, "rgba(255, 250, 210, 0)");
+        ctx.fillStyle = beam;
+        ctx.beginPath();
+        ctx.moveTo(v.w / 2, -9);
+        ctx.lineTo(v.w / 2 + 150, -48);
+        ctx.lineTo(v.w / 2 + 150, 48);
+        ctx.lineTo(v.w / 2, 9);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Neon pod podwoziem (dla supersamochodów w nocy)
+      if (v.type === "super" && !v.destroyed) {
+        ctx.shadowColor = v.color;
+        ctx.shadowBlur = 18;
+      }
+
+      // Cień
+      ctx.fillStyle = "rgba(0,0,0,0.45)";
+      ctx.fillRect(-v.w / 2 + 4, -v.h / 2 + 4, v.w, v.h);
+
+      // Karoseria
+      ctx.fillStyle = v.destroyed ? "#2a2630" : v.color;
+      roundRect(ctx, -v.w / 2, -v.h / 2, v.w, v.h, 7);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Biały pas na radiowozie
+      if (v.type === "police" && !v.destroyed) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(-10, -v.h / 2 + 1, 20, v.h - 2);
+      }
+
+      // Szyby
+      ctx.fillStyle = v.type === "cabrio" ? "#261a36" : "#111626";
+      roundRect(ctx, -v.w * 0.24, -v.h * 0.36, v.w * 0.5, v.h * 0.72, 4);
+      ctx.fill();
+
+      // Światła tylne (czerwone) i przednie (białe)
+      ctx.fillStyle = "#fff5cc";
+      ctx.fillRect(v.w / 2 - 4, -v.h / 2 + 3, 4, 6);
+      ctx.fillRect(v.w / 2 - 4, v.h / 2 - 9, 4, 6);
+      ctx.fillStyle = "#ff2a55";
+      ctx.fillRect(-v.w / 2, -v.h / 2 + 3, 3, 6);
+      ctx.fillRect(-v.w / 2, v.h / 2 - 9, 3, 6);
+
+      // Migające koguty policyjne
+      if (v.type === "police" && !v.destroyed && (player.wanted > 0 || v.driver === "player")) {
+        const redOn = Math.sin(v.sirenPhase) > 0;
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.fillStyle = redOn ? "#ff2a55" : "#00b4ff";
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = 22;
+        ctx.beginPath();
+        ctx.arc(0, redOn ? -6 : 6, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Znacznik celu misji nad autem
+      if (v.isMissionTarget) {
+        ctx.strokeStyle = "#ffbe0b";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, 34 + Math.sin(performance.now() * 0.008) * 5, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    function drawPerson(x, y, angle, shirt, hair, armed = false, isPlayer = false) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+
+      if (isPlayer) {
+        ctx.strokeStyle = "rgba(0, 240, 255, 0.5)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, 17, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Ramiona / tułów
+      ctx.fillStyle = shirt;
+      roundRect(ctx, -7, -11, 14, 22, 6);
+      ctx.fill();
+
+      // Broń
+      if (armed) {
+        ctx.fillStyle = "#1b1d29";
+        ctx.fillRect(5, 2, 13, 4);
+      }
+
+      // Głowa
+      ctx.fillStyle = "#f1c27d";
+      ctx.beginPath();
+      ctx.arc(1, 0, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Włosy
+      ctx.fillStyle = hair;
+      ctx.beginPath();
+      ctx.arc(-1, 0, 6.5, Math.PI * 0.5, Math.PI * 1.5);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawPalmTree(x, y, r) {
+      ctx.save();
+      ctx.translate(x, y);
+      // Cień
+      ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
+      ctx.beginPath();
+      ctx.arc(8, 8, r, 0, Math.PI * 2);
+      ctx.fill();
+      // Liście palmy
+      const fronds = 7;
+      for (let i = 0; i < fronds; i++) {
+        ctx.save();
+        ctx.rotate((i / fronds) * Math.PI * 2 + 0.3);
+        ctx.fillStyle = i % 2 === 0 ? "#1b9956" : "#24b868";
+        ctx.beginPath();
+        ctx.ellipse(r * 0.65, 0, r * 0.72, r * 0.24, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      ctx.fillStyle = "#6c4a2e";
+      ctx.beginPath();
+      ctx.arc(0, 0, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawMissionMarkers() {
+      const pulse = 1 + Math.sin(performance.now() * 0.007) * 0.14;
+      const m = missionState.active;
+
+      if (!m) {
+        const sm = missionState.startMarker;
+        ctx.save();
+        ctx.strokeStyle = "#ff2a85";
+        ctx.fillStyle = "rgba(255, 42, 133, 0.18)";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(sm.x, sm.y, sm.r * pulse, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#ffbe0b";
+        ctx.font = "900 13px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("★ MISJA", sm.x, sm.y + 4);
+        ctx.restore();
+      } else if (m.targetX !== undefined) {
+        ctx.save();
+        ctx.strokeStyle = "#ffbe0b";
+        ctx.fillStyle = "rgba(255, 190, 11, 0.2)";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(m.targetX, m.targetY, 44 * pulse, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function roundRect(c, x, y, w, h, r) {
+      c.beginPath();
+      c.moveTo(x + r, y);
+      c.arcTo(x + w, y, x + w, y + h, r);
+      c.arcTo(x + w, y + h, x, y + h, r);
+      c.arcTo(x, y + h, x, y, r);
+      c.arcTo(x, y, x + w, y, r);
+      c.closePath();
+    }
+
+    /* =========================================================================
+       RADAR / MINIMAPKA
+       ========================================================================= */
+    function renderRadar() {
+      const rw = radarCanvas.width;
+      const rh = radarCanvas.height;
+      const scale = 0.088; // skala radaru
+      const px = player.inVehicle ? player.inVehicle.x : player.x;
+      const py = player.inVehicle ? player.inVehicle.y : player.y;
+
+      rctx.fillStyle = "#0e0a1d";
+      rctx.fillRect(0, 0, rw, rh);
+
+      rctx.save();
+      rctx.translate(rw / 2, rh / 2);
+
+      // Plaża i ocean na radarze
+      rctx.fillStyle = "#b8905e";
+      rctx.fillRect((BEACH_X - px) * scale, -py * scale, (OCEAN_X - BEACH_X) * scale, WORLD_SIZE * scale);
+      rctx.fillStyle = "#0a4c8a";
+      rctx.fillRect((OCEAN_X - px) * scale, -py * scale, (WORLD_SIZE - OCEAN_X) * scale, WORLD_SIZE * scale);
+
+      // Drogi
+      rctx.fillStyle = "#2c2842";
+      for (const rx of ROAD_XS) rctx.fillRect((rx - ROAD_WIDTH / 2 - px) * scale, -py * scale, ROAD_WIDTH * scale, WORLD_SIZE * scale);
+      for (const ry of ROAD_YS) rctx.fillRect(-px * scale, (ry - ROAD_WIDTH / 2 - py) * scale, BEACH_X * scale, ROAD_WIDTH * scale);
+
+      // Budynki
+      rctx.fillStyle = "#1c1730";
+      for (const b of buildings) {
+        const bx = (b.x - px) * scale;
+        const by = (b.y - py) * scale;
+        if (Math.abs(bx) > rw || Math.abs(by) > rh) continue;
+        rctx.fillRect(bx, by, b.w * scale, b.h * scale);
+      }
+
+      // Ikona Warsztatu NEON SPRAY (turkusowy punkt)
+      drawRadarBlip(SPRAY_SHOP.x, SPRAY_SHOP.y, px, py, scale, "#00f0ff", 5, true);
+
+      // Policja (migające kropki)
+      const policeCol = Math.floor(performance.now() / 220) % 2 === 0 ? "#ff2a55" : "#00b4ff";
+      for (const v of vehicles) {
+        if (v.driver === "police" && !v.destroyed) {
+          drawRadarBlip(v.x, v.y, px, py, scale, policeCol, 3.5, false);
+        }
+      }
+
+      // Znacznik misji (różowy lub złoty — zawsze widoczny na krawędzi radaru)
+      if (!missionState.active) {
+        drawRadarBlip(missionState.startMarker.x, missionState.startMarker.y, px, py, scale, "#ff2a85", 5.5, true);
+      } else if (missionState.active.targetX !== undefined) {
+        drawRadarBlip(missionState.active.targetX, missionState.active.targetY, px, py, scale, "#ffbe0b", 6, true);
+      }
+
+      // Strzałka gracza na środku
+      rctx.rotate(player.angle);
+      rctx.fillStyle = "#ffffff";
+      rctx.beginPath();
+      rctx.moveTo(7, 0);
+      rctx.lineTo(-5, -4.5);
+      rctx.lineTo(-3, 0);
+      rctx.lineTo(-5, 4.5);
+      rctx.closePath();
+      rctx.fill();
+
+      rctx.restore();
+    }
+
+    function drawRadarBlip(wx, wy, px, py, scale, color, size, clampToEdge) {
+      let rx = (wx - px) * scale;
+      let ry = (wy - py) * scale;
+      const limit = 78;
+      if (clampToEdge) {
+        const d = Math.hypot(rx, ry);
+        if (d > limit) {
+          rx = (rx / d) * limit;
+          ry = (ry / d) * limit;
+        }
+      } else if (Math.abs(rx) > 84 || Math.abs(ry) > 84) {
+        return;
+      }
+      rctx.fillStyle = color;
+      rctx.beginPath();
+      rctx.arc(rx, ry, size, 0, Math.PI * 2);
+      rctx.fill();
+    }
+
+    /* =========================================================================
+       AKTUALIZACJA INTERFEJSU HUD
+       ========================================================================= */
+    function updateHUD() {
+      const px = player.inVehicle ? player.inVehicle.x : player.x;
+      const py = player.inVehicle ? player.inVehicle.y : player.y;
+
+      document.getElementById('hudCharName').textContent = CHARACTERS[player.charIdx].name;
+      document.getElementById('hudCash').textContent = `$ ${Math.floor(player.cash).toLocaleString('pl-PL')}`;
+
+      const hrs = Math.floor(timeOfDay).toString().padStart(2, '0');
+      const mins = Math.floor((timeOfDay % 1) * 60).toString().padStart(2, '0');
+      document.getElementById('hudClock').textContent = `${hrs}:${mins}`;
+      document.getElementById('hudDistrict').textContent = getDistrictName(px, py);
+
+      // Gwiazdki poszukiwań
+      const starEls = document.getElementById('hudStars').children;
+      for (let i = 0; i < 5; i++) {
+        starEls[i].classList.toggle('active', i < player.wanted);
+        starEls[i].classList.toggle('flashing', i < player.wanted && player.wanted >= 2);
+      }
+
+      // Broń
+      const w = WEAPONS[player.weaponIdx];
+      document.getElementById('hudWeapon').textContent = w.name;
+      document.getElementById('hudAmmo').textContent = w.infinite ? "∞" : w.ammo;
+
+      // Paski HP / Pancerz
+      document.getElementById('hpBar').style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
+      document.getElementById('armorBar').style.width = `${Math.max(0, (player.armor / player.maxArmor) * 100)}%`;
+
+      // Prędkościomierz
+      const speedo = document.getElementById('speedoPanel');
+      if (player.inVehicle) {
+        speedo.classList.add('visible');
+        const kmh = Math.round(Math.hypot(player.inVehicle.vx, player.inVehicle.vy) * 0.42);
+        document.getElementById('speedVal').textContent = kmh;
+        document.getElementById('carNameLabel').textContent = player.inVehicle.name;
+        document.getElementById('nitroBar').style.width = `${player.inVehicle.nitro}%`;
+      } else {
+        speedo.classList.remove('visible');
+      }
+
+      // Panel misji
+      const m = missionState.active;
+      if (m) {
+        document.getElementById('missionTitle').textContent = m.title;
+        document.getElementById('missionDesc').textContent = m.desc;
+        let meta = `Nagroda: $${m.reward}`;
+        if (m.timer !== undefined) meta += ` • Czas: ${Math.max(0, Math.ceil(m.timer))}s`;
+        document.getElementById('missionMeta').textContent = meta;
+      } else {
+        document.getElementById('missionTitle').textContent = "WOLNA JAZDA";
+        document.getElementById('missionDesc').textContent = "Wjedź w pulsujący różowy punkt ★ na mapie, aby rozpocząć nową misję.";
+        document.getElementById('missionMeta').textContent = `Ukończone misje: ${missionState.completedCount}`;
+      }
+
+      // Podpowiedź kontekstowa (blisko pojazdu)
+      const hint = document.getElementById('contextHint');
+      if (!player.inVehicle) {
+        let nearCar = null;
+        for (const v of vehicles) {
+          if (!v.destroyed && Math.hypot(v.x - player.x, v.y - player.y) < 70) {
+            nearCar = v;
+            break;
+          }
+        }
+        if (nearCar) {
+          hint.textContent = `Wciśnij [E], aby wsiąść: ${nearCar.name}`;
+          hint.classList.add('show');
+        } else {
+          hint.classList.remove('show');
+        }
+      } else {
+        hint.classList.remove('show');
+      }
+    }
+
+    function showBanner(main, sub = "") {
+      document.getElementById('bannerMain').textContent = main;
+      document.getElementById('bannerSub').textContent = sub;
+      document.getElementById('bannerOverlay').classList.add('show');
+      bannerTimer = 3.2;
+    }
+
+    /* =========================================================================
+       OBSŁUGA MENU, ZDARZEŃ I PĘTLI GŁÓWNEJ
+       ========================================================================= */
+    function selectStartChar(idx) {
+      selectedStartChar = idx;
+      document.getElementById('selectMaja').classList.toggle('selected', idx === 0);
+      document.getElementById('selectLuka').classList.toggle('selected', idx === 1);
+    }
+
+    function toggleRadio() {
+      sound.init();
+      sound.switchStation();
+    }
+
+    function toggleMute() {
+      sound.init();
+      sound.toggleMute();
+    }
+
+    function toggleHelp() {
+      helpOpen = !helpOpen;
+      document.getElementById('helpModal').classList.toggle('show', helpOpen);
+    }
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function startGame() {
+      sound.init();
+      player.charIdx = selectedStartChar;
+      generateWorld();
+      populateCity();
+      placeNextMissionMarker();
+
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('hud').classList.add('active');
+      gameRunning = true;
+      showBanner("WITAJ W NEO LEONIDZIE", `Grasz jako ${CHARACTERS[player.charIdx].name} • Powodzenia!`);
+    }
+
+    function setupTouchControls() {
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      if (!isTouch) return;
+      document.getElementById('touchControls').classList.add('enabled');
+
+      const pad = document.getElementById('touchPad');
+      const knob = document.getElementById('touchKnob');
+      let padRect = null;
+
+      pad.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touchState.active = true;
+        padRect = pad.getBoundingClientRect();
+      });
+
+      pad.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!padRect) return;
+        const t = e.touches[0];
+        const cx = padRect.left + padRect.width / 2;
+        const cy = padRect.top + padRect.height / 2;
+        let dx = (t.clientX - cx) / 45;
+        let dy = (t.clientY - cy) / 45;
+        const d = Math.hypot(dx, dy);
+        if (d > 1) { dx /= d; dy /= d; }
+        touchState.dx = dx;
+        touchState.dy = dy;
+        knob.style.transform = `translate(${dx * 36}px, ${dy * 36}px)`;
+      });
+
+      pad.addEventListener('touchend', () => {
+        touchState.dx = 0;
+        touchState.dy = 0;
+        knob.style.transform = `translate(0px, 0px)`;
+      });
+
+      const bindBtn = (id, downFn, upFn) => {
+        const el = document.getElementById(id);
+        el.addEventListener('touchstart', (e) => { e.preventDefault(); downFn(); });
+        el.addEventListener('touchend', (e) => { e.preventDefault(); if (upFn) upFn(); });
+      };
+
+      bindBtn('tShoot', () => { touchState.shoot = true; }, () => { touchState.shoot = false; });
+      bindBtn('tBoost', () => { touchState.boost = true; }, () => { touchState.boost = false; });
+      bindBtn('tCar', () => tryToggleVehicle());
+      bindBtn('tSwitch', () => switchCharacter());
+    }
+
+    function gameLoop(ts) {
+      const dt = Math.min(0.05, (ts - lastTime) / 1000 || 0.016);
+      lastTime = ts;
+
+      if (gameRunning && !helpOpen) {
+        update(dt);
+      }
+      if (ctx) {
+        render();
+      }
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Inicjalizacja po załadowaniu strony
+    window.onload = function () {
+      canvas = document.getElementById('gameCanvas');
+      ctx = canvas.getContext('2d');
+      radarCanvas = document.getElementById('radarCanvas');
+      rctx = radarCanvas.getContext('2d');
+
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      // Wygeneruj tło świata już na ekranie startowym
+      generateWorld();
+      populateCity();
+
+      document.getElementById('startBtn').addEventListener('click', startGame);
+
+      // Klawiatura
+      window.addEventListener('keydown', (e) => {
+        keys[e.code] = true;
+        if (!gameRunning) return;
+
+        if (e.code === 'Tab') {
+          e.preventDefault();
+          switchCharacter();
+        } else if (e.code === 'KeyE' || e.code === 'KeyF') {
+          tryToggleVehicle();
+        } else if (e.code === 'Digit1') {
+          player.weaponIdx = 0;
+        } else if (e.code === 'Digit2') {
+          player.weaponIdx = 1;
+        } else if (e.code === 'Digit3') {
+          player.weaponIdx = 2;
+        } else if (e.code === 'KeyR') {
+          toggleRadio();
+        } else if (e.code === 'KeyM') {
+          toggleMute();
+        } else if (e.code === 'KeyH' || e.code === 'Escape') {
+          toggleHelp();
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        keys[e.code] = false;
+      });
+
+      // Mysz
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+      window.addEventListener('mousedown', (e) => {
+        if (e.button === 0 && gameRunning && !helpOpen) mouse.down = true;
+      });
+      window.addEventListener('mouseup', (e) => {
+        if (e.button === 0) mouse.down = false;
+      });
+
+      setupTouchControls();
+      requestAnimationFrame(gameLoop);
+    };
+  </script>
+</body>
+</html>
+```
